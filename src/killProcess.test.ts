@@ -5,7 +5,7 @@ import {killProcess} from './killProcess'
 import {delay} from './delay'
 
 describe('killProcess', function () {
-	this.timeout(30000)
+	this.timeout(60000)
 
 	it('empty stages', async function () {
 		let predicateCallsCount = 0

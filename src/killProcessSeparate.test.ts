@@ -7,7 +7,7 @@ import path from 'path'
 import fs from 'fs'
 
 describe('killProcessSeparate', function () {
-	this.timeout(30000)
+	this.timeout(60000)
 
 	it('close with delay', async function () {
  		const command = `setTimeout(function() { console.log('Completed') }, 60000)`
