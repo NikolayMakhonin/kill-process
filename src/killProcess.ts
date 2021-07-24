@@ -38,6 +38,7 @@ export async function killProcess({
 									typeof signal === 'number'
 										? '-' + signal
 										: '-' + signal.replace(/^sig/i, '').toUpperCase(),
+									proc.pid.toString(),
 								], {
 									stdio: ['inherit', 'pipe', 'pipe'],
 								})
