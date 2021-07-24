@@ -25,30 +25,12 @@ export async function killProcess({
 				return true
 			}
 
-			for (let i = 0; i < processes.length; i++) {
-				const proc = processes[i]
-				for (let j = 0; j < stage.signals.length; j++) {
-					const signal = stage.signals[j]
-					try {
-						process.kill(proc.pid, signal)
-						killResults.push({
-							signal,
-							process: proc,
-						})
-					} catch (error) {
-						killResults.push({
-							signal,
-							process: proc,
-							error,
-						})
-					}
-				}
-			}
-
-			// await Promise.all(processes.flatMap(proc => {
-			// 	return stage.signals.map(async signal => {
+			// for (let i = 0; i < processes.length; i++) {
+			// 	const proc = processes[i]
+			// 	for (let j = 0; j < stage.signals.length; j++) {
+			// 		const signal = stage.signals[j]
 			// 		try {
-			// 			await kill(proc.pid, signal)
+			// 			process.kill(proc.pid, signal)
 			// 			killResults.push({
 			// 				signal,
 			// 				process: proc,
@@ -60,8 +42,26 @@ export async function killProcess({
 			// 				error,
 			// 			})
 			// 		}
-			// 	})
-			// }))
+			// 	}
+			// }
+
+			await Promise.all(processes.flatMap(proc => {
+				return stage.signals.map(async signal => {
+					try {
+						await kill(proc.pid, signal)
+						killResults.push({
+							signal,
+							process: proc,
+						})
+					} catch (error) {
+						killResults.push({
+							signal,
+							process: proc,
+							error,
+						})
+					}
+				})
+			}))
 		}
 
 		if (stage.timeout) {
