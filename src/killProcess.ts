@@ -47,19 +47,20 @@ export async function killProcess({
 
 			await Promise.all(processes.flatMap(proc => {
 				return stage.signals.map(async signal => {
+					let error
 					try {
 						await kill(proc.pid, signal)
-						killResults.push({
-							signal,
-							process: proc,
-						})
-					} catch (error) {
-						killResults.push({
-							signal,
-							process: proc,
-							error,
-						})
+					} catch (err) {
+						// ESRCH - process is not exist or killed before
+						if (err.code !== 'ESRCH') {
+							error = err
+						}
 					}
+					killResults.push({
+						signal,
+						process: proc,
+						error,
+					})
 				})
 			}))
 		}
