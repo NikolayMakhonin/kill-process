@@ -11,11 +11,11 @@ const logFilePath = process.argv[3]
 const command = process.argv[4]
 const logError = createLogErrorToFile(appLogFilePath)
 
-spawn('node', ['-e', command], {
-	// detached   : true,
-	windowsHide: true,
-	stdio      : 'ignore',
-})
+// spawn('node', ['-e', command], {
+// 	// detached   : true,
+// 	windowsHide: true,
+// 	stdio      : 'ignore',
+// })
 	// .unref()
 
 function finalize() {
