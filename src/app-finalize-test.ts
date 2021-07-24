@@ -1,10 +1,12 @@
 import {killProcessSeparate} from './killProcessSeparate'
 
-console.error('QWEQWEQWE')
+setTimeout(() => {
+	// to prevent auto close process
+}, 30000)
 
 function finalize() {
-
 	const command = process.argv[1]
+	const logFilePath = process.argv[2]
 
 	killProcessSeparate({
 		description: 'TestDescription',
@@ -18,6 +20,7 @@ function finalize() {
 		state: {
 			command,
 		},
+		logFilePath,
 		createPredicate(state) {
 			return (proc, processTree, stage, stageIndex, stages) => {
 				if (stage.signal !== 'SIGKILL') {

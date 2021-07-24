@@ -2,19 +2,21 @@
 import {fork, spawn} from 'child_process'
 import {waitProcessList} from '@flemist/find-process'
 import {delay} from './delay'
+import assert from 'assert'
+import path from 'path'
 
 describe('killProcessSeparate', function () {
 	this.timeout(10000)
 
-	it('close with delay', async function () {
+	xit('close with delay', async function () {
  		const command = `setTimeout(function() { console.log('Completed') }, 30000)`
 
 		let proc
-		let error
+		let errors = []
 		function startProc() {
 			proc = spawn('node', ['-e', command])
 			proc.on('error', err => {
-				error = err
+				errors.push(err)
 			})
 		}
 
@@ -23,26 +25,42 @@ describe('killProcessSeparate', function () {
 
 		let predicateCallsCount = 0
 
-		const appProc = fork(require.resolve('../dist/app-finalize-test.js'), [command])
-		appProc.stdout.on('data', chunk => {
-			console.log(chunk.toString())
+		const appProc = spawn('node', [
+			require.resolve('../dist/app-finalize-test.js'),
+			command,
+			path.resolve('tmp/log.txt'),
+		], {
+			stdio: ['inherit', 'ipc', 'pipe']
+		})
+		appProc.on('error', err => {
+			errors.push(err)
 		})
 		appProc.stderr.on('data', chunk => {
-			console.error(chunk.toString())
+			const error = chunk.toString()
+			if (/debugger|inspector/i.test(error)) {
+				return
+			}
+			errors.push(error)
+			console.error(error)
 		})
 
-		waitProcessList({
+		await delay(1000)
+		if (errors.length) {
+			assert.fail(errors.join('\r\n'))
+		}
+
+		await waitProcessList({
 			timeout: 1000,
 			checkInterval: 100,
-			description: 'Wait app close',
+			description: 'Wait app open',
 			predicate(processList) {
-				return processList.every(o => o.command.indexOf('app-finalize-test') < 0)
+				return processList.some(o => o.command.indexOf('app-finalize-test') >= 0)
 			}
 		})
 
 		process.kill(appProc.pid, 'SIGTERM')
 
-		waitProcessList({
+		await waitProcessList({
 			timeout: 1000,
 			checkInterval: 100,
 			description: 'Wait app close',
@@ -52,14 +70,20 @@ describe('killProcessSeparate', function () {
 			}
 		})
 
-		waitProcessList({
-			timeout: 1000,
+		await waitProcessList({
+			timeout: 5000,
 			checkInterval: 100,
-			description: 'Wait app close',
+			description: 'Wait app finalize',
 			predicate(processList) {
 				return processList.every(o => o.command.indexOf('app-finalize-test') < 0)
 					&& processList.every(o => o.command.indexOf(command) < 0)
 			}
 		})
+
+		await delay(1000)
+
+		if (errors.length) {
+			assert.fail(errors.join('\r\n'))
+		}
 	})
 })

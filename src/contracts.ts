@@ -24,6 +24,8 @@ export type TKillProcessArgs = {
 
 export type TKillProcessArgsSerializable<TState> = Omit<TKillProcessArgs, 'predicate'> & {
 	state?: TState
+	/** For write errors to file. Use absolute path. */
+	logFilePath?: string
 	createPredicate: (state: TState) => TKillProcessPredicate
 }
 
