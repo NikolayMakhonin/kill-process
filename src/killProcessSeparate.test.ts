@@ -1,5 +1,5 @@
 /* eslint-disable no-shadow */
-import {fork, spawn} from 'child_process'
+import {spawn} from 'child_process'
 import {waitProcessList} from '@flemist/find-process'
 import {delay} from './delay'
 import assert from 'assert'
@@ -23,7 +23,6 @@ describe('killProcessSeparate', function () {
 		startProc()
 		await delay(1000)
 
-		let predicateCallsCount = 0
 		const logFilePath = path.resolve('tmp/module/log/log.txt')
 
 		const appProc = spawn('node', [
@@ -66,7 +65,7 @@ describe('killProcessSeparate', function () {
 		// 	assert.fail(errors.join('\r\n'))
 		// }
 
-		// process.kill(appProc.pid, 'SIGTERM')
+		// process.kill(appProc.pid, 'SIGHUP')
 
 		await waitProcessList({
 			timeout: 2000,

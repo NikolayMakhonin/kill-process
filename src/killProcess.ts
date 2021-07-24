@@ -15,7 +15,7 @@ export async function killProcess({
 	async function iteration(stageIndex: number): Promise<boolean> {
 		const stage = stages[stageIndex]
 
-		if (stage.signal != null) {
+		if (stage.signals) {
 			processes = await findInProcessTree((proc, processTree) => {
 				return predicate(proc, processTree, stage, stageIndex, stages)
 			})
@@ -26,18 +26,21 @@ export async function killProcess({
 
 			for (let i = 0; i < processes.length; i++) {
 				const proc = processes[i]
-				try {
-					process.kill(proc.pid, stage.signal)
-					killResults.push({
-						signal : stage.signal,
-						process: proc,
-					})
-				} catch (error) {
-					killResults.push({
-						signal : stage.signal,
-						process: proc,
-						error,
-					})
+				for (let j = 0; j < stage.signals.length; j++) {
+					const signal = stage.signals[j]
+					try {
+						process.kill(proc.pid, signal)
+						killResults.push({
+							signal,
+							process: proc,
+						})
+					} catch (error) {
+						killResults.push({
+							signal,
+							process: proc,
+							error,
+						})
+					}
 				}
 			}
 		}

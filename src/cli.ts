@@ -36,14 +36,19 @@ function parseAndValidateArgs(args: TKillProcessArgsSerialized<any>): TKillProce
 		throw Error('The stages is empty')
 	}
 	args.stages.forEach(stage => {
-		if (stage.signal && typeof stage.signal !== 'string') {
+		if (stage.signals && Array.isArray(stage.signals)) {
 			throw Error('The signal is not a string')
 		}
+		stage.signals.forEach(signal => {
+			if (typeof signal !== 'string' && typeof signal !== 'number') {
+				throw Error('The signal is not a string or number')
+			}
+		})
 		if (stage.timeout && typeof stage.timeout !== 'number') {
 			throw Error('The timeout is not a number')
 		}
-		if (!stage.signal && !stage.timeout) {
-			throw Error('The stage is not contains signal or timeout')
+		if ((!stage.signals || stage.signals.length === 0) && !stage.timeout) {
+			throw Error('The stage is not contains signals or timeout')
 		}
 	})
 

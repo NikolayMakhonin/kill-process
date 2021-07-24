@@ -44,7 +44,7 @@ describe('killProcess', function () {
 		const result = await killProcess({
 			description: 'TestDescription',
 			stages: [
-				{signal: 'SIGKILL'},
+				{signals: ['SIGKILL']},
 			],
 			predicate(proc, processTree, stage, stageIndex, stages) {
 				checkPredicateArgs(proc, processTree, stage, stageIndex, stages)
@@ -78,14 +78,14 @@ describe('killProcess', function () {
 			description: 'TestDescription',
 			stages: [
 				{timeout: 1000},
-				{signal: 0, timeout: 1000},
-				{signal: 'IncorrectSignal' as any, timeout: 1000},
-				{signal: 'SIGTERM', timeout: 1000},
-				{signal: 'SIGKILL', timeout: 1000},
+				{signals: [0], timeout: 1000},
+				{signals: ['IncorrectSignal' as any], timeout: 1000},
+				{signals: ['SIGHUP'], timeout: 1000},
+				{signals: ['SIGKILL'], timeout: 1000},
 			],
 			predicate(proc, processTree, stage, stageIndex, stages) {
 				predicateCallsCount++
-				assert.ok(stage.signal !== 'SIGKILL')
+				assert.ok(stage.signals[0] !== 'SIGKILL')
 				checkPredicateArgs(proc, processTree, stage, stageIndex, stages)
 				return proc.command.indexOf(command) >= 0
 			},
@@ -104,7 +104,7 @@ describe('killProcess', function () {
 		assert.ok(result[1].process.command.indexOf(command) >= 0)
 		assert.ok(result[1].error)
 
-		assert.strictEqual(result[2].signal, 'SIGTERM')
+		assert.strictEqual(result[2].signal, 'SIGHUP')
 		assert.ok(result[2].process.command.indexOf(command) >= 0)
 		assert.ok(!result[2].error)
 	})
@@ -151,6 +151,6 @@ describe('killProcess', function () {
 
 		assert.ok(predicateCallsCount >= 4)
 
-		process.kill(proc.pid, 'SIGTERM')
+		process.kill(proc.pid, 'SIGHUP')
 	})
 })

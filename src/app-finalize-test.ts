@@ -28,10 +28,10 @@ function finalize() {
 			description: 'TestDescription',
 			stages     : [
 				{timeout: 1000},
-				{signal: 0, timeout: 1000},
-				{signal: 'IncorrectSignal' as any, timeout: 1000},
-				{signal: 'SIGTERM', timeout: 1000},
-				{signal: 'SIGKILL', timeout: 1000},
+				{signals: [0], timeout: 1000},
+				{signals: ['IncorrectSignal' as any], timeout: 1000},
+				{signals: ['SIGHUP'], timeout: 1000},
+				{signals: ['SIGKILL'], timeout: 1000},
 			],
 			state: {
 				command,
@@ -39,7 +39,7 @@ function finalize() {
 			logFilePath,
 			createPredicate(state) {
 				return (proc, processTree, stage, stageIndex, stages) => {
-					if (stage.signal === 'SIGKILL') {
+					if (stage.signals[0] === 'SIGKILL') {
 						throw new Error('stage.signal === SIGKILL')
 					}
 					if (proc && typeof proc !== 'object') {
@@ -83,8 +83,18 @@ process.on('close', () => {
 	finalize()
 })
 
+process.on('SIGHUP', () => {
+	logError('SIGHUP')
+	finalize()
+})
+
+process.on('SIGINT', () => {
+	logError('SIGINT')
+	finalize()
+})
+
 process.on('SIGTERM', () => {
-	// logError('SIGTERM')
+	logError('SIGTERM')
 	finalize()
 })
 

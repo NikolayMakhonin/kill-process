@@ -3,7 +3,7 @@ import {TProcessNode, TProcessTree} from '@flemist/ps-cross-platform'
 export type TSignal = NodeJS.Signals | number
 
 export type TKillStage = {
-	signal?: TSignal
+	signals?: TSignal[]
 	/** milliseconds, wait timeout after kill */
 	timeout?: number
 }
