@@ -1,1 +1,1 @@
-// export * from './kill-process'
+export * from './kill-process'
