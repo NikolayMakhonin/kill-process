@@ -6,7 +6,7 @@ import assert from 'assert'
 import path from 'path'
 
 describe('killProcessSeparate', function () {
-	this.timeout(10000)
+	this.timeout(20000)
 
 	xit('close with delay', async function () {
  		const command = `setTimeout(function() { console.log('Completed') }, 30000)`
@@ -24,14 +24,17 @@ describe('killProcessSeparate', function () {
 		await delay(1000)
 
 		let predicateCallsCount = 0
+		const logFilePath = path.resolve('tmp/module/log/log.txt')
 
 		const appProc = spawn('node', [
 			require.resolve('../dist/app-finalize-test.js'),
+			logFilePath,
 			command,
-			path.resolve('tmp/log.txt'),
 		], {
+			// detached: true,
 			stdio: ['inherit', 'ipc', 'pipe']
 		})
+		// appProc.unref()
 		appProc.on('error', err => {
 			errors.push(err)
 		})
@@ -58,7 +61,12 @@ describe('killProcessSeparate', function () {
 			}
 		})
 
-		process.kill(appProc.pid, 'SIGTERM')
+		// await delay(5000)
+		// if (errors.length) {
+		// 	assert.fail(errors.join('\r\n'))
+		// }
+
+		// process.kill(appProc.pid, 'SIGTERM')
 
 		await waitProcessList({
 			timeout: 1000,

@@ -1,12 +1,29 @@
 import {killProcessSeparate} from './killProcessSeparate'
+import fs from 'fs'
+import path from 'path'
 
 setTimeout(() => {
 	// to prevent auto close process
 }, 30000)
 
+const selfLogFilePath = 'tmp/app/log/log.txt'
+const dir = path.dirname(selfLogFilePath)
+fs.mkdirSync(dir, { recursive: true })
+function logError(error: any) {
+	console.error(error)
+	fs.appendFile(selfLogFilePath, '\r\n' + new Date().toISOString() + error + '', err => {
+		if (err) {
+			console.error(err)
+		}
+		// eslint-disable-next-line no-process-exit
+		process.exit(1)
+	})
+}
+
 function finalize() {
-	const command = process.argv[1]
+	logError('finalize')
 	const logFilePath = process.argv[2]
+	const command = process.argv[3]
 
 	killProcessSeparate({
 		description: 'TestDescription',
@@ -53,4 +70,24 @@ function finalize() {
 	})
 }
 
-process.once('SIGTERM', finalize)
+process.on('exit', () => {
+	logError('exit')
+	finalize()
+})
+
+process.on('close', () => {
+	logError('close')
+	finalize()
+})
+
+process.on('SIGTERM', () => {
+	logError('SIGTERM')
+	finalize()
+})
+
+// finalize()
+setTimeout(() => {
+	logError('self close')
+	// eslint-disable-next-line no-process-exit
+	process.exit(0)
+}, 1500)

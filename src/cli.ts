@@ -7,7 +7,7 @@ import fs from 'fs'
 import path from 'path'
 
 async function readArgs(): Promise<TKillProcessArgsSerialized<any>> {
-	let argsStr = (process.argv[2] || process.env.KILL_PROCESS_ARGS || '').trim()
+	let argsStr = (process.argv[3] || process.env.KILL_PROCESS_ARGS || '').trim()
 	if (!argsStr) {
 		argsStr = await readStreamString(process.stdin)
 	}
@@ -74,7 +74,7 @@ async function kill() {
 	}
 }
 
-const logFilePath = (process.argv[1] || process.env.KILL_PROCESS_LOG_PATH || '').trim()
+const logFilePath = (process.argv[2] || process.env.KILL_PROCESS_LOG_PATH || '').trim()
 
 Promise.resolve()
 	.then(kill)
@@ -83,13 +83,16 @@ Promise.resolve()
 		if (logFilePath) {
 			const dir = path.dirname(logFilePath)
 			fs.mkdirSync(dir, { recursive: true })
-			fs.appendFile(logFilePath, '\r\n' + new Date().toISOString() + error + '', err => {
-				if (err) {
-					console.error(err)
-				}
-				// eslint-disable-next-line no-process-exit
-				process.exit(1)
-			})
+			fs.appendFile(logFilePath, '\r\n' + new Date().toISOString()
+				+ (error && error.stack || error) + '',
+				err => {
+					if (err) {
+						console.error(err)
+					}
+					// eslint-disable-next-line no-process-exit
+					process.exit(1)
+				},
+			)
 		} else {
 			// eslint-disable-next-line no-process-exit
 			process.exit(1)
