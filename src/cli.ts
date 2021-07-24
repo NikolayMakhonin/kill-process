@@ -10,8 +10,11 @@ import {cliId} from './cliId'
 
 const logFilePath = (process.argv[2] || process.env.KILL_PROCESS_LOG_PATH || '').trim()
 const logError = createLogErrorToFile(logFilePath)
-
 async function readArgs(): Promise<TKillProcessArgsSerialized<any>> {
+	if (process.argv[3] !== cliId) {
+		throw Error(`process.argv[3] ${process.argv[3]} !== ${cliId}`)
+	}
+
 	let argsStr = (process.argv[4] || process.env.KILL_PROCESS_ARGS || '').trim()
 	if (!argsStr) {
 		argsStr = await readStreamString(process.stdin)

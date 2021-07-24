@@ -2,7 +2,7 @@
 import {findInProcessTree, waitProcessTree} from '@flemist/find-process'
 import {TProcessNode} from '@flemist/ps-cross-platform'
 import {TKillProcessArgs, TKillResult} from './contracts'
-import {spawn} from 'child_process'
+import {kill} from './kill'
 
 /** Return kill operations */
 export async function killProcess({
@@ -30,43 +30,7 @@ export async function killProcess({
 				for (let j = 0; j < stage.signals.length; j++) {
 					const signal = stage.signals[j]
 					try {
-						if (process.platform === 'win32') {
-							process.kill(proc.pid, signal)
-						} else {
-							await new Promise((resolve, reject) => {
-								const killProc = spawn('kill', [
-									typeof signal === 'number'
-										? '-' + signal
-										: '-' + signal.replace(/^sig/i, '').toUpperCase(),
-									proc.pid.toString(),
-								], {
-									stdio: ['inherit', 'pipe', 'pipe'],
-								})
-
-								let hasError
-								const chunks = []
-
-								killProc
-									.on('error', reject)
-									.on('end', () => {
-										const log = Buffer.concat(chunks).toString('utf-8')
-										if (hasError) {
-											reject(new Error(log))
-											return
-										}
-										resolve(void 0)
-									})
-
-								killProc.stdout.on('data', (chunk) => {
-									chunks.push(chunk)
-								})
-
-								killProc.stderr.on('data', (chunk) => {
-									chunks.push(chunk)
-									hasError = true
-								})
-							})
-						}
+						process.kill(proc.pid, signal)
 						killResults.push({
 							signal,
 							process: proc,
@@ -80,6 +44,24 @@ export async function killProcess({
 					}
 				}
 			}
+
+			// await Promise.all(processes.flatMap(proc => {
+			// 	return stage.signals.map(async signal => {
+			// 		try {
+			// 			await kill(proc.pid, signal)
+			// 			killResults.push({
+			// 				signal,
+			// 				process: proc,
+			// 			})
+			// 		} catch (error) {
+			// 			killResults.push({
+			// 				signal,
+			// 				process: proc,
+			// 				error,
+			// 			})
+			// 		}
+			// 	})
+			// }))
 		}
 
 		if (stage.timeout) {
