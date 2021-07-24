@@ -5,6 +5,10 @@ import {TKillProcessArgs, TKillProcessArgsSerialized} from './contracts'
 import {readStreamString} from './readStreamHelpers'
 import fs from 'fs'
 import path from 'path'
+import {createLogErrorToFile} from './logErrorToFile'
+
+const logFilePath = (process.argv[2] || process.env.KILL_PROCESS_LOG_PATH || '').trim()
+const logError = createLogErrorToFile(logFilePath)
 
 async function readArgs(): Promise<TKillProcessArgsSerialized<any>> {
 	let argsStr = (process.argv[3] || process.env.KILL_PROCESS_ARGS || '').trim()
@@ -74,19 +78,18 @@ async function kill() {
 	const args = await readArgs()
 	try {
 		const argsParsed = parseAndValidateArgs(args)
-		await killProcess(argsParsed)
+		const result = await killProcess(argsParsed)
+		logError(JSON.stringify(result, null, 4))
 	} catch (err) {
-		console.error(JSON.stringify(args, null, 4))
+		logError(JSON.stringify(args, null, 4))
 		throw err
 	}
 }
 
-const logFilePath = (process.argv[2] || process.env.KILL_PROCESS_LOG_PATH || '').trim()
-
 Promise.resolve()
 	.then(kill)
 	.catch(error => {
-		console.error(error)
+		logError(error)
 		if (logFilePath) {
 			const dir = path.dirname(logFilePath)
 			fs.mkdirSync(dir, { recursive: true })

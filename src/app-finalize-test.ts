@@ -1,28 +1,20 @@
 import {killProcessSeparate} from './killProcessSeparate'
 import fs from 'fs'
 import path from 'path'
+import {createLogErrorToFile} from './logErrorToFile'
 
 setTimeout(() => {
 	// to prevent auto close process
 }, 30000)
 
-const selfLogFilePath = 'tmp/app/log/log.txt'
-const dir = path.dirname(selfLogFilePath)
-fs.mkdirSync(dir, { recursive: true })
-function logError(error: any) {
-	console.error(error)
-	fs.appendFileSync(
-		selfLogFilePath,
-		'\r\n\r\n' + new Date().toISOString() + ': '
-		+ (error && error.stack || error) + '',
-	)
-}
+const appLogFilePath = process.argv[2]
+const logError = createLogErrorToFile(appLogFilePath)
 
 function finalize() {
 	// logError('finalize')
 	try {
-		const logFilePath = process.argv[2]
-		const command = process.argv[3]
+		const logFilePath = process.argv[3]
+		const command = process.argv[4]
 
 		killProcessSeparate({
 			description: 'TestDescription',
