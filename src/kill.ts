@@ -5,7 +5,7 @@ import {spawn} from 'child_process'
 export function kill(pid: number, signal: TSignal) {
 	if (process.platform === 'win32') {
 	// 	treeKill(-pid, signal)
-		process.kill(-pid, signal)
+		process.kill(pid, signal)
 		return
 	}
 
