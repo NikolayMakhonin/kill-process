@@ -12,22 +12,22 @@ describe('killProcessSeparate', function () {
 	it('close with delay', async function () {
  		const command = `setTimeout(function() { console.log('Completed') }, 60000)`
 
-		let proc
-		let errors = []
-		function startProc() {
-			proc = spawn('node', ['-e', command], {
-				detached: true,
-				windowsHide: true,
-				stdio: 'ignore',
-			})
-			proc.unref()
-			proc.on('error', err => {
-				errors.push(err)
-			})
-		}
+		// let proc
+		// let errors = []
+		// function startProc() {
+		// 	proc = spawn('node', ['-e', command], {
+		// 		detached: true,
+		// 		windowsHide: true,
+		// 		stdio: 'ignore',
+		// 	})
+		// 	proc.unref()
+		// 	proc.on('error', err => {
+		// 		errors.push(err)
+		// 	})
+		// }
 
-		startProc()
-		await delay(1000)
+		// startProc()
+		// await delay(1000)
 
 		const appLogFilePath = path.resolve('tmp/app/log/log.txt')
 		const logFilePath = path.resolve('tmp/module/log/log.txt')
@@ -57,10 +57,10 @@ describe('killProcessSeparate', function () {
 			// 	console.error(error)
 			// })
 
-			await delay(1000)
-			if (errors.length) {
-				assert.fail(errors.join('\r\n'))
-			}
+			// await delay(1000)
+			// if (errors.length) {
+			// 	assert.fail(errors.join('\r\n'))
+			// }
 
 			await waitProcessList({
 				timeout: 1000,
@@ -112,9 +112,9 @@ describe('killProcessSeparate', function () {
 
 			await delay(1000)
 
-			if (errors.length) {
-				assert.fail(errors.join('\r\n'))
-			}
+			// if (errors.length) {
+			// 	assert.fail(errors.join('\r\n'))
+			// }
 		} finally {
 			let hasError
 			if (fs.existsSync(appLogFilePath)) {
