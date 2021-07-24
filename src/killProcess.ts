@@ -2,6 +2,7 @@
 import {findInProcessTree, waitProcessTree} from '@flemist/find-process'
 import {TProcessNode} from '@flemist/ps-cross-platform'
 import {TKillProcessArgs, TKillResult} from './contracts'
+import {spawn} from 'child_process'
 
 /** Return kill operations */
 export async function killProcess({
@@ -29,7 +30,41 @@ export async function killProcess({
 				for (let j = 0; j < stage.signals.length; j++) {
 					const signal = stage.signals[j]
 					try {
-						process.kill(proc.pid, signal)
+						if (process.platform === 'win32') {
+							process.kill(proc.pid, signal)
+						} else {
+							await new Promise((resolve, reject) => {
+								const killProc = spawn('kill', [
+									typeof signal === 'number'
+										? '-' + signal
+										: signal,
+								], {
+									detached: true,
+									stdio   : ['inherit', 'pipe', 'pipe'],
+								})
+
+								let hasError
+								const chunks = []
+
+								killProc
+									.on('error', reject)
+									.on('end', () => {
+										const log = Buffer.concat(chunks).toString('utf-8')
+										if (hasError) {
+											reject(log)
+										}
+									})
+
+								killProc.stdout.on('data', (chunk) => {
+									chunks.push(chunk)
+								})
+
+								killProc.stderr.on('data', (chunk) => {
+									chunks.push(chunk)
+									hasError = true
+								})
+							})
+						}
 						killResults.push({
 							signal,
 							process: proc,
