@@ -2,10 +2,11 @@ import {TSignal} from './contracts'
 // import treeKill from 'tree-kill'
 // import {spawn} from 'child_process'
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function kill(pid: number, signal: TSignal) {
 	// if (process.platform === 'win32') {
 	// 	treeKill(-pid, signal)
-		process.kill(pid, signal)
+		process.kill(pid)
 		return
 	// }
 
