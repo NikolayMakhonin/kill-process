@@ -112,11 +112,11 @@ describe('killProcessSeparate', function () {
 			let hasError
 			if (fs.existsSync(appLogFilePath)) {
 				hasError = true
-				console.error(fs.readFileSync('appLogFilePath', { encoding: 'utf-8' }))
+				console.error(fs.readFileSync(appLogFilePath, { encoding: 'utf-8' }))
 			}
 			if (fs.existsSync(logFilePath)) {
 				hasError = true
-				console.error(fs.readFileSync('logFilePath', { encoding: 'utf-8' }))
+				console.error(fs.readFileSync(logFilePath, { encoding: 'utf-8' }))
 			}
 			if (hasError) {
 				assert.fail('Error log files found')

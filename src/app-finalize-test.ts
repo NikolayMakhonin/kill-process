@@ -1,6 +1,4 @@
 import {killProcessSeparate} from './killProcessSeparate'
-import fs from 'fs'
-import path from 'path'
 import {createLogErrorToFile} from './logErrorToFile'
 
 setTimeout(() => {
@@ -71,23 +69,23 @@ process.on('exit', () => {
 })
 
 process.on('close', () => {
-	// logError('close')
-	finalize()
+	logError('close')
+	// finalize()
 })
 
 process.on('SIGHUP', () => {
 	logError('SIGHUP')
-	finalize()
+	// finalize()
 })
 
 process.on('SIGINT', () => {
 	logError('SIGINT')
-	finalize()
+	// finalize()
 })
 
 process.on('SIGTERM', () => {
 	logError('SIGTERM')
-	finalize()
+	// finalize()
 })
 
 // finalize()
