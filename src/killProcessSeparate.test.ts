@@ -6,10 +6,10 @@ import assert from 'assert'
 import path from 'path'
 
 describe('killProcessSeparate', function () {
-	this.timeout(20000)
+	this.timeout(30000)
 
-	xit('close with delay', async function () {
- 		const command = `setTimeout(function() { console.log('Completed') }, 30000)`
+	it('close with delay', async function () {
+ 		const command = `setTimeout(function() { console.log('Completed') }, 60000)`
 
 		let proc
 		let errors = []
@@ -69,7 +69,7 @@ describe('killProcessSeparate', function () {
 		// process.kill(appProc.pid, 'SIGTERM')
 
 		await waitProcessList({
-			timeout: 1000,
+			timeout: 2000,
 			checkInterval: 100,
 			description: 'Wait app close',
 			predicate(processList) {
@@ -79,7 +79,7 @@ describe('killProcessSeparate', function () {
 		})
 
 		await waitProcessList({
-			timeout: 5000,
+			timeout: 15000,
 			checkInterval: 100,
 			description: 'Wait app finalize',
 			predicate(processList) {

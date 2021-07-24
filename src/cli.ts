@@ -83,18 +83,13 @@ Promise.resolve()
 		if (logFilePath) {
 			const dir = path.dirname(logFilePath)
 			fs.mkdirSync(dir, { recursive: true })
-			fs.appendFile(logFilePath, '\r\n' + new Date().toISOString()
+			fs.appendFileSync(
+				logFilePath,
+				'\r\n\r\n' + new Date().toISOString() + ': '
 				+ (error && error.stack || error) + '',
-				err => {
-					if (err) {
-						console.error(err)
-					}
-					// eslint-disable-next-line no-process-exit
-					process.exit(1)
-				},
 			)
-		} else {
-			// eslint-disable-next-line no-process-exit
-			process.exit(1)
 		}
+
+		// eslint-disable-next-line no-process-exit
+		process.exit(1)
 	})

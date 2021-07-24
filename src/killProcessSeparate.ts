@@ -18,8 +18,6 @@ export function killProcessSeparate<TState>(args: TKillProcessArgsSerializable<T
 
 	const argsStr = JSON.stringify(_args, null, 4)
 
-	console.error('SDFSDFSDF')
-
 	fork(require.resolve('../dist/cli.js'), [logFilePath, argsStr], {
 		detached: true,
 	})
