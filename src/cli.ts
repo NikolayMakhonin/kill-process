@@ -63,7 +63,7 @@ async function kill() {
 		const argsParsed = parseAndValidateArgs(args)
 		await killProcess(argsParsed)
 	} catch (err) {
-		console.error(JSON.stringify(args))
+		console.error(JSON.stringify(args, null, 4))
 		throw err
 	}
 }

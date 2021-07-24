@@ -1,26 +1,21 @@
 /* eslint-disable no-await-in-loop */
 import {findInProcessTree, waitProcessTree} from '@flemist/find-process'
 import {TProcessNode} from '@flemist/ps-cross-platform'
-import {TKillProcessArgs} from './contracts'
-
-export type TKillOperationLog = {
-	signal: NodeJS.Signals
-	process: TProcessNode
-}
+import {TKillProcessArgs, TKillResult} from './contracts'
 
 /** Return kill operations */
 export async function killProcess({
 	description,
 	stages,
 	predicate,
-}: TKillProcessArgs): Promise<TKillOperationLog[]> {
-	const killOperations: TKillOperationLog[] = []
+}: TKillProcessArgs): Promise<TKillResult[]> {
+	const killResults: TKillResult[] = []
 	let processes: TProcessNode[]
 
 	async function iteration(stageIndex: number): Promise<boolean> {
 		const stage = stages[stageIndex]
 
-		if (stage.signal) {
+		if (stage.signal != null) {
 			processes = await findInProcessTree((proc, processTree) => {
 				return predicate(proc, processTree, stage, stageIndex, stages)
 			})
@@ -30,15 +25,20 @@ export async function killProcess({
 			}
 
 			for (let i = 0; i < processes.length; i++) {
+				const proc = processes[i]
 				try {
-					const proc = processes[i]
 					process.kill(proc.pid, stage.signal)
-					killOperations.push({
+					killResults.push({
 						signal : stage.signal,
 						process: proc,
 					})
-				} catch (err) {
-					console.error(err)
+				} catch (error) {
+					killResults.push({
+						signal : stage.signal,
+						process: proc,
+						error,
+					})
+					console.error(error)
 				}
 			}
 		}
@@ -49,7 +49,7 @@ export async function killProcess({
 				checkInterval: 100,
 				predicate(processTree) {
 					processes = Object.values(processTree)
-						.filter((proc) => !predicate(proc, processTree, stage, stageIndex, stages))
+						.filter((proc) => predicate(proc, processTree, stage, stageIndex, stages))
 					return processes.length === 0
 				},
 			})
@@ -66,7 +66,7 @@ export async function killProcess({
 
 	for (let stageIndex = 0; stageIndex < stages.length; stageIndex++) {
 		if (await iteration(stageIndex)) {
-			return killOperations
+			return killResults
 		}
 	}
 
@@ -81,7 +81,7 @@ export async function killProcess({
 
 	throw new Error('Processes is not killed'
 		+ (description ? ': ' + description : '')
-		+ '\r\nkillOperations: ' + JSON.stringify(killOperations)
-		+ '\r\nprocesses: ' + (processes && JSON.stringify(processes))
-		+ '\r\nstages: ' + JSON.stringify(stages))
+		+ '\r\nkillOperations: ' + JSON.stringify(killResults, null, 4)
+		+ '\r\nprocesses: ' + (processes && JSON.stringify(processes, null, 4))
+		+ '\r\nstages: ' + JSON.stringify(stages, null, 4))
 }

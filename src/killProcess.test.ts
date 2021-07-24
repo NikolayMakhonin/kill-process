@@ -57,7 +57,7 @@ describe('killProcess', function () {
 		assert.deepStrictEqual(result, [])
 	})
 
-	xit('close with delay', async function () {
+	it('close with delay', async function () {
  		const command = `setTimeout(function() { console.log('Completed') }, 30000)`
 
 		let proc
@@ -76,21 +76,27 @@ describe('killProcess', function () {
 			description: 'TestDescription',
 			stages: [
 				{timeout: 1000},
-				{signal: 'SIGTERM', timeout: 5000},
+				{signal: 0, timeout: 1000},
+				{signal: 'SIGTERM', timeout: 1000},
 				{signal: 'SIGKILL', timeout: 1000},
 			],
 			predicate(proc, processTree, stage, stageIndex, stages) {
+				assert.ok(stage.signal !== 'SIGKILL')
 				checkPredicateArgs(proc, processTree, stage, stageIndex, stages)
 				return proc.command.indexOf(command) >= 0
 			},
 		})
 
 		assert.ok(Array.isArray(result), 'result=' + result)
-		assert.ok(result.length === 1, 'result.length=' + result.length)
-		result.forEach(o => {
-			assert.strictEqual(o.signal, 'SIGKILL')
-			assert.ok(o.process.command.indexOf(command) >= 0)
-		})
+		assert.ok(result.length === 2, 'result.length !== 2: ' + JSON.stringify(result, null, 4))
+
+		assert.strictEqual(result[0].signal, 0)
+		assert.ok(result[0].process.command.indexOf(command) >= 0)
+		assert.ok(!result[0].error)
+
+		assert.strictEqual(result[1].signal, 'SIGTERM')
+		assert.ok(result[1].process.command.indexOf(command) >= 0)
+		assert.ok(!result[1].error)
 	})
 	//
 	// it('timeout', async function () {
