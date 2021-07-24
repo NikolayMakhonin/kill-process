@@ -37,7 +37,7 @@ export async function killProcess({
 								const killProc = spawn('kill', [
 									typeof signal === 'number'
 										? '-' + signal
-										: signal,
+										: '-' + signal.replace(/^sig/i, '').toUpperCase(),
 								], {
 									stdio: ['inherit', 'pipe', 'pipe'],
 								})
