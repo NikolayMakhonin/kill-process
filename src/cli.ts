@@ -6,6 +6,7 @@ import {readStreamString} from './readStreamHelpers'
 import fs from 'fs'
 import path from 'path'
 import {createLogErrorToFile} from './logErrorToFile'
+import {cliId} from './cliId'
 
 const logFilePath = (process.argv[2] || process.env.KILL_PROCESS_LOG_PATH || '').trim()
 const logError = createLogErrorToFile(logFilePath)
@@ -72,7 +73,7 @@ function parseAndValidateArgs(args: TKillProcessArgsSerialized<any>): TKillProce
 		...args,
 		// eslint-disable-next-line func-name-matching
 		predicate: function _predicate(proc) {
-			if (proc.pid === process.pid) {
+			if (proc.pid === process.pid || proc.command.indexOf(cliId) >= 0) {
 				return false
 			}
 			const result = predicate.apply(this, arguments)

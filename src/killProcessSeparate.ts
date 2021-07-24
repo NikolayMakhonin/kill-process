@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import {TKillProcessArgsSerializable, TKillProcessArgsSerialized} from './contracts'
 import {fork} from 'child_process'
+import {cliId} from './cliId'
 
 /** Kill processes in separated and detached process */
 export function killProcessSeparate<TState>(args: TKillProcessArgsSerializable<TState>) {
