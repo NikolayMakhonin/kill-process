@@ -1,1 +1,3 @@
-export * from './kill-process'
+export * from './contracts'
+export * from './killProcess'
+

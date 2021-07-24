@@ -1,28 +1,13 @@
 /* eslint-disable no-await-in-loop */
-import {waitProcessTree, findInProcessTree} from '@flemist/find-process'
-import {TProcessNode, TProcessTree} from '@flemist/ps-cross-platform'
+import {findInProcessTree, waitProcessTree} from '@flemist/find-process'
+import {TProcessNode} from '@flemist/ps-cross-platform'
+import {TKillProcessArgs} from './contracts'
 
-type TKillStage = {
-	signal?: NodeJS.Signals
-	/** milliseconds, wait timeout after kill */
-	timeout?: number
-}
-
-export async function killProcesses({
+export async function killProcess({
 	description,
 	stages,
 	predicate,
-}:{
-	description?: string,
-	stages: TKillStage[],
-	predicate: (
-		proc: TProcessNode,
-		processTree: TProcessTree,
-		stage: TKillStage,
-		stageIndex: number,
-		stages: TKillStage[],
-	) => boolean
-}) {
+}: TKillProcessArgs) {
 	let processes: TProcessNode[]
 
 	async function iteration(stageIndex: number) {
