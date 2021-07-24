@@ -92,6 +92,7 @@ async function kill() {
 		// logError(JSON.stringify(result, null, 4))
 		return result
 	} catch (err) {
+		logError('process.pid=' + process.pid)
 		logError(JSON.stringify(args, null, 4))
 		throw err
 	}
