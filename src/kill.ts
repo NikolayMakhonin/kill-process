@@ -1,43 +1,46 @@
 import {TSignal} from './contracts'
 import {spawn} from 'child_process'
 
-export function kill(pid: number, signal: TSignal): Promise<void>|void {
+export function kill(pid: number, signal: TSignal) {
 	if (process.platform === 'win32') {
 		process.kill(pid, signal)
-		return void 0
+		return
 	}
 
-	return new Promise<void>((resolve, reject) => {
-		const killProc = spawn('kill', [
+	// return new Promise<void>((resolve, reject) => {
+		spawn('kill', [
 			typeof signal === 'number'
 				? '-' + signal
 				: '-' + signal.replace(/^sig/i, '').toUpperCase(),
 			pid.toString(),
 		], {
-			stdio: ['inherit', 'pipe', 'pipe'],
+			detached: true,
+			stdio   : 'ignore',
+			// stdio: ['inherit', 'pipe', 'pipe'],
 		})
+			.unref()
 
-		let hasError
-		const chunks = []
-
-		killProc
-			.on('error', reject)
-			.on('end', () => {
-				const log = Buffer.concat(chunks).toString('utf-8')
-				if (hasError) {
-					reject(new Error(log))
-					return
-				}
-				resolve(void 0)
-			})
-
-		killProc.stdout.on('data', (chunk) => {
-			chunks.push(chunk)
-		})
-
-		killProc.stderr.on('data', (chunk) => {
-			chunks.push(chunk)
-			hasError = true
-		})
-	})
+		// let hasError
+		// const chunks = []
+		//
+		// killProc
+		// 	.on('error', reject)
+		// 	.on('end', () => {
+		// 		const log = Buffer.concat(chunks).toString('utf-8')
+		// 		if (hasError) {
+		// 			reject(new Error(log))
+		// 			return
+		// 		}
+		// 		resolve(void 0)
+		// 	})
+		//
+		// killProc.stdout.on('data', (chunk) => {
+		// 	chunks.push(chunk)
+		// })
+		//
+		// killProc.stderr.on('data', (chunk) => {
+		// 	chunks.push(chunk)
+		// 	hasError = true
+		// })
+	// })
 }
