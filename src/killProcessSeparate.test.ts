@@ -39,22 +39,23 @@ describe('killProcessSeparate', function () {
 				logFilePath,
 				command,
 			], {
-				// detached: true,
-				stdio: ['inherit', 'ipc', 'pipe'],
+				detached: true,
+				stdio: 'ignore',
+				// stdio: ['inherit', 'ipc', 'pipe'],
 				windowsHide: true,
 			})
-			// appProc.unref()
-			appProc.on('error', err => {
-				errors.push(err)
-			})
-			appProc.stderr.on('data', chunk => {
-				const error = chunk.toString()
-				if (/debugger|inspector/i.test(error)) {
-					return
-				}
-				errors.push(error)
-				console.error(error)
-			})
+			appProc.unref()
+			// appProc.on('error', err => {
+			// 	errors.push(err)
+			// })
+			// appProc.stderr.on('data', chunk => {
+			// 	const error = chunk.toString()
+			// 	if (/debugger|inspector/i.test(error)) {
+			// 		return
+			// 	}
+			// 	errors.push(error)
+			// 	console.error(error)
+			// })
 
 			await delay(1000)
 			if (errors.length) {
