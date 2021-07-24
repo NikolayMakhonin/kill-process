@@ -1,10 +1,12 @@
 import {TSignal} from './contracts'
+import treeKill from 'tree-kill'
 // import {spawn} from 'child_process'
 
 export function kill(pid: number, signal: TSignal) {
 	// if (process.platform === 'win32') {
-		process.kill(pid, signal)
-		return
+		treeKill(pid, signal)
+		// process.kill(pid, signal)
+		// return
 	// }
 
 	// return new Promise<void>((resolve, reject) => {
