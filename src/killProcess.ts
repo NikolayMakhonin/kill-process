@@ -3,14 +3,21 @@ import {findInProcessTree, waitProcessTree} from '@flemist/find-process'
 import {TProcessNode} from '@flemist/ps-cross-platform'
 import {TKillProcessArgs} from './contracts'
 
+export type TKillOperationLog = {
+	signal: NodeJS.Signals
+	process: TProcessNode
+}
+
+/** Return kill operations */
 export async function killProcess({
 	description,
 	stages,
 	predicate,
-}: TKillProcessArgs) {
+}: TKillProcessArgs): Promise<TKillOperationLog[]> {
+	const killOperations: TKillOperationLog[] = []
 	let processes: TProcessNode[]
 
-	async function iteration(stageIndex: number) {
+	async function iteration(stageIndex: number): Promise<boolean> {
 		const stage = stages[stageIndex]
 
 		if (stage.signal) {
@@ -19,12 +26,17 @@ export async function killProcess({
 			})
 
 			if (processes.length === 0) {
-				return
+				return true
 			}
 
 			for (let i = 0; i < processes.length; i++) {
 				try {
-					process.kill(processes[i].pid, stage.signal)
+					const proc = processes[i]
+					process.kill(proc.pid, stage.signal)
+					killOperations.push({
+						signal : stage.signal,
+						process: proc,
+					})
 				} catch (err) {
 					console.error(err)
 				}
@@ -45,17 +57,31 @@ export async function killProcess({
 				.catch(() => false)
 
 			if (waitResult) {
-				return
+				return true
 			}
 		}
+
+		return false
 	}
 
 	for (let stageIndex = 0; stageIndex < stages.length; stageIndex++) {
-		await iteration(stageIndex)
+		if (await iteration(stageIndex)) {
+			return killOperations
+		}
+	}
+
+	if (!processes) {
+		throw new Error(
+			'killProcess error'
+			+ (description ? ': ' + description : '')
+			+ '\r\nYou should specify at least one non empty stage. stages='
+			+ JSON.stringify(stages, null, 4),
+		)
 	}
 
 	throw new Error('Processes is not killed'
 		+ (description ? ': ' + description : '')
+		+ '\r\nkillOperations: ' + JSON.stringify(killOperations)
 		+ '\r\nprocesses: ' + (processes && JSON.stringify(processes))
 		+ '\r\nstages: ' + JSON.stringify(stages))
 }
