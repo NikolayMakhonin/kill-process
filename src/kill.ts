@@ -9,9 +9,8 @@ export function kill(pid: number, signal: TSignal) {
 
 	// return new Promise<void>((resolve, reject) => {
 		spawn('kill', [
-			typeof signal === 'number'
-				? '-n ' + signal
-				: '-s ' + signal.toUpperCase(),
+			typeof signal === 'number' ? '-n' : '-s',
+			signal.toString().toUpperCase(),
 			pid.toString(),
 		], {
 			detached: true,
