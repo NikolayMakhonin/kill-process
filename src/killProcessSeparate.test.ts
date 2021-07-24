@@ -74,16 +74,28 @@ describe('killProcessSeparate', function () {
 			predicate(processList) {
 				return processList.every(o => o.command.indexOf('app-finalize-test') < 0)
 					&& processList.some(o => o.command.indexOf(command) >= 0)
+					&& processList.some(o => /dist[\\/]cli.js/.test(o.command))
 			}
 		})
 
 		await waitProcessList({
 			timeout: 15000,
 			checkInterval: 100,
+			description: 'Wait app closer',
+			predicate(processList) {
+				return processList.every(o => o.command.indexOf('app-finalize-test') < 0)
+					&& processList.every(o => !/dist[\\/]cli.js/.test(o.command))
+			}
+		})
+
+		await waitProcessList({
+			timeout: 2000,
+			checkInterval: 100,
 			description: 'Wait app finalize',
 			predicate(processList) {
 				return processList.every(o => o.command.indexOf('app-finalize-test') < 0)
 					&& processList.every(o => o.command.indexOf(command) < 0)
+					&& processList.every(o => !/dist[\\/]cli.js/.test(o.command))
 			}
 		})
 
