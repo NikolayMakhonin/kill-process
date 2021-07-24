@@ -77,6 +77,7 @@ describe('killProcess', function () {
 			stages: [
 				{timeout: 1000},
 				{signal: 0, timeout: 1000},
+				{signal: 'IncorrectSignal' as any, timeout: 1000},
 				{signal: 'SIGTERM', timeout: 1000},
 				{signal: 'SIGKILL', timeout: 1000},
 			],
@@ -88,15 +89,19 @@ describe('killProcess', function () {
 		})
 
 		assert.ok(Array.isArray(result), 'result=' + result)
-		assert.ok(result.length === 2, 'result.length !== 2: ' + JSON.stringify(result, null, 4))
+		assert.ok(result.length === 3, 'result.length !== 2: ' + JSON.stringify(result, null, 4))
 
 		assert.strictEqual(result[0].signal, 0)
 		assert.ok(result[0].process.command.indexOf(command) >= 0)
 		assert.ok(!result[0].error)
 
-		assert.strictEqual(result[1].signal, 'SIGTERM')
+		assert.strictEqual(result[1].signal, 'IncorrectSignal')
 		assert.ok(result[1].process.command.indexOf(command) >= 0)
-		assert.ok(!result[1].error)
+		assert.ok(result[1].error)
+
+		assert.strictEqual(result[2].signal, 'SIGTERM')
+		assert.ok(result[2].process.command.indexOf(command) >= 0)
+		assert.ok(!result[2].error)
 	})
 	//
 	// it('timeout', async function () {

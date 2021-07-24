@@ -38,7 +38,6 @@ export async function killProcess({
 						process: proc,
 						error,
 					})
-					console.error(error)
 				}
 			}
 		}
