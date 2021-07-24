@@ -30,7 +30,7 @@ function finalize() {
 				{timeout: 1000},
 				{signals: [0], timeout: 1000},
 				{signals: ['IncorrectSignal' as any], timeout: 1000},
-				{signals: ['SIGHUP'], timeout: 1000},
+				{signals: ['SIGINT'], timeout: 1000},
 				{signals: ['SIGKILL'], timeout: 1000},
 			],
 			state: {

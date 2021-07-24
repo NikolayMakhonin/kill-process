@@ -65,7 +65,7 @@ describe('killProcessSeparate', function () {
 		// 	assert.fail(errors.join('\r\n'))
 		// }
 
-		// process.kill(appProc.pid, 'SIGHUP')
+		// process.kill(appProc.pid, 'SIGINT')
 
 		await waitProcessList({
 			timeout: 2000,

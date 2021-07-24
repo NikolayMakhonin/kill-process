@@ -80,7 +80,7 @@ describe('killProcess', function () {
 				{timeout: 1000},
 				{signals: [0], timeout: 1000},
 				{signals: ['IncorrectSignal' as any], timeout: 1000},
-				{signals: ['SIGHUP'], timeout: 1000},
+				{signals: ['SIGINT'], timeout: 1000},
 				{signals: ['SIGKILL'], timeout: 1000},
 			],
 			predicate(proc, processTree, stage, stageIndex, stages) {
@@ -104,7 +104,7 @@ describe('killProcess', function () {
 		assert.ok(result[1].process.command.indexOf(command) >= 0)
 		assert.ok(result[1].error)
 
-		assert.strictEqual(result[2].signal, 'SIGHUP')
+		assert.strictEqual(result[2].signal, 'SIGINT')
 		assert.ok(result[2].process.command.indexOf(command) >= 0)
 		assert.ok(!result[2].error)
 	})
@@ -151,6 +151,6 @@ describe('killProcess', function () {
 
 		assert.ok(predicateCallsCount >= 4)
 
-		process.kill(proc.pid, 'SIGHUP')
+		process.kill(proc.pid, 'SIGKILL')
 	})
 })
