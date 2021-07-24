@@ -12,7 +12,7 @@ const logFilePath = (process.argv[2] || process.env.KILL_PROCESS_LOG_PATH || '')
 const logError = createLogErrorToFile(logFilePath)
 
 async function readArgs(): Promise<TKillProcessArgsSerialized<any>> {
-	let argsStr = (process.argv[3] || process.env.KILL_PROCESS_ARGS || '').trim()
+	let argsStr = (process.argv[4] || process.env.KILL_PROCESS_ARGS || '').trim()
 	if (!argsStr) {
 		argsStr = await readStreamString(process.stdin)
 	}
