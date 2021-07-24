@@ -36,8 +36,8 @@ function parseAndValidateArgs(args: TKillProcessArgsSerialized<any>): TKillProce
 		throw Error('The stages is empty')
 	}
 	args.stages.forEach(stage => {
-		if (stage.signals && Array.isArray(stage.signals)) {
-			throw Error('The signal is not a string')
+		if (stage.signals && !Array.isArray(stage.signals)) {
+			throw Error('The signals is not an array')
 		}
         if (stage.signals) {
 			stage.signals.forEach(signal => {
