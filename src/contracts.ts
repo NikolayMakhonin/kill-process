@@ -8,20 +8,30 @@ export type TKillStage = {
 	timeout?: number
 }
 
+export type TKillProcessPredicate = (
+	proc: TProcessNode,
+	processTree: TProcessTree,
+	stage: TKillStage,
+	stageIndex: number,
+	stages: TKillStage[],
+) => boolean
+
 export type TKillProcessArgs = {
 	description?: string,
 	stages: TKillStage[],
-	predicate: (
-		proc: TProcessNode,
-		processTree: TProcessTree,
-		stage: TKillStage,
-		stageIndex: number,
-		stages: TKillStage[],
-	) => boolean
+	predicate: TKillProcessPredicate,
 }
 
-export type TKillProcessArgsSerializable = Omit<TKillProcessArgs, 'predicate'> & {
-	predicate: string
+export type TKillProcessArgsSerializable<TState> = Omit<TKillProcessArgs, 'predicate'> & {
+	state?: TState
+	createPredicate: (state: TState) => TKillProcessPredicate
+}
+
+export type TKillProcessArgsSerialized<TState> = Omit<
+	TKillProcessArgsSerializable<TState>,
+	'createPredicate'
+> & {
+	createPredicate: string
 }
 
 export type TKillResult = {

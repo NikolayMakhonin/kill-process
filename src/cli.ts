@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 import {killProcess} from './killProcess'
-import {TKillProcessArgs, TKillProcessArgsSerializable} from './contracts'
+import {TKillProcessArgs, TKillProcessArgsSerialized} from './contracts'
 import {readStreamString} from './readStreamHelpers'
 
-async function readArgs(): Promise<TKillProcessArgsSerializable> {
+async function readArgs(): Promise<TKillProcessArgsSerialized<any>> {
 	let argsStr = (process.argv[1] || process.env.KILL_PROCESS_ARGS || '').trim()
 	if (!argsStr) {
 		argsStr = await readStreamString(process.stdin)
@@ -17,11 +17,11 @@ async function readArgs(): Promise<TKillProcessArgsSerializable> {
 	}
 }
 
-function parseAndValidateArgs(args: TKillProcessArgsSerializable): TKillProcessArgs {
+function parseAndValidateArgs(args: TKillProcessArgsSerialized<any>): TKillProcessArgs {
 	if (!(args instanceof Object)) {
 		throw Error('The args is not an object')
 	}
-	if (typeof args.predicate !== 'string') {
+	if (typeof args.createPredicate !== 'string') {
 		throw Error('The predicate is not a function as string')
 	}
 	if (args.description && typeof args.description !== 'string') {
@@ -46,8 +46,12 @@ function parseAndValidateArgs(args: TKillProcessArgsSerializable): TKillProcessA
 	})
 
 	// eslint-disable-next-line no-new-func
-	const predicate = Function(`return (${args.predicate})`)()
-	if (typeof args.predicate !== 'function') {
+	const createPredicate = Function(`return (${args.createPredicate})`)()
+	if (typeof createPredicate !== 'function') {
+		throw Error('The createPredicate is not a function')
+	}
+	const predicate = createPredicate(args.state)
+	if (typeof predicate !== 'function') {
 		throw Error('The predicate is not a function')
 	}
 
