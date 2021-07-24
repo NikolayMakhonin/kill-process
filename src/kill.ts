@@ -13,6 +13,7 @@ export function kill(pid: number, signal: TSignal) {
 		spawn('kill', [
 			// typeof signal === 'number' ? '-n' : '-s',
 			// signal.toString().toUpperCase(),
+			'-15',
 			pid.toString(),
 		], {
 			detached: true,
