@@ -1,23 +1,23 @@
 import {TSignal} from './contracts'
-import {spawn} from 'child_process'
+// import {spawn} from 'child_process'
 
 export function kill(pid: number, signal: TSignal) {
-	if (process.platform === 'win32') {
+	// if (process.platform === 'win32') {
 		process.kill(pid, signal)
 		return
-	}
+	// }
 
 	// return new Promise<void>((resolve, reject) => {
-		spawn('kill', [
-			typeof signal === 'number' ? '-n' : '-s',
-			signal.toString().toUpperCase(),
-			pid.toString(),
-		], {
-			detached: true,
-			stdio   : 'ignore',
-			// stdio: ['inherit', 'pipe', 'pipe'],
-		})
-			.unref()
+	// 	spawn('kill', [
+	// 		typeof signal === 'number' ? '-n' : '-s',
+	// 		signal.toString().toUpperCase(),
+	// 		pid.toString(),
+	// 	], {
+	// 		detached: true,
+	// 		stdio   : 'ignore',
+	// 		// stdio: ['inherit', 'pipe', 'pipe'],
+	// 	})
+	// 		.unref()
 
 		// let hasError
 		// const chunks = []
