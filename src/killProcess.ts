@@ -50,7 +50,7 @@ export async function killProcess({
 									.on('end', () => {
 										const log = Buffer.concat(chunks).toString('utf-8')
 										if (hasError) {
-											reject(log)
+											reject(new Error(log))
 										}
 									})
 
