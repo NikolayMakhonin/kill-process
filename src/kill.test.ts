@@ -30,7 +30,8 @@ describe('kill', function () {
 
 		assert.strictEqual(proc.exitCode, null)
 
-		kill(proc.pid, 'SIGKILL')
+		proc.kill()
+		// kill(proc.pid, 'SIGKILL')
 		await delay(1000)
 
 		assert.strictEqual(proc.exitCode, 1)
