@@ -18,6 +18,7 @@ describe('killProcessSeparate', function () {
 			proc = spawn('node', ['-e', command], {
 				detached: true,
 				windowsHide: true,
+				stdio: 'ignore',
 			})
 			proc.unref()
 			proc.on('error', err => {

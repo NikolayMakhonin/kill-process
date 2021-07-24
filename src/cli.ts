@@ -70,7 +70,17 @@ function parseAndValidateArgs(args: TKillProcessArgsSerialized<any>): TKillProce
 
 	return {
 		...args,
-		predicate,
+		// eslint-disable-next-line func-name-matching
+		predicate: function _predicate(proc) {
+			if (proc.pid === process.pid) {
+				return false
+			}
+			const result = predicate.apply(this, arguments)
+			// if (result && stage.signals[0] === 'SIGINT') {
+			// 	logError('stage.signal === SIGINT\r\n' + JSON.stringify(proc, null, 4))
+			// }
+			return result
+		},
 	}
 }
 
@@ -79,7 +89,8 @@ async function kill() {
 	try {
 		const argsParsed = parseAndValidateArgs(args)
 		const result = await killProcess(argsParsed)
-		logError(JSON.stringify(result, null, 4))
+		// logError(JSON.stringify(result, null, 4))
+		return result
 	} catch (err) {
 		logError(JSON.stringify(args, null, 4))
 		throw err

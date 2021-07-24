@@ -24,11 +24,15 @@ function finalize() {
 				{signals: ['SIGKILL'], timeout: 1000},
 			],
 			state: {
+				ignorePid: process.pid,
 				command,
 			},
 			logFilePath,
 			createPredicate(state) {
 				return (proc, processTree, stage, stageIndex, stages) => {
+					if (proc.pid === state.ignorePid) {
+						return false
+					}
 					if (stage.signals[0] === 'SIGKILL') {
 						throw new Error('stage.signal === SIGKILL')
 					}

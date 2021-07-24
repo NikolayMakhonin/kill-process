@@ -20,6 +20,7 @@ export function killProcessSeparate<TState>(args: TKillProcessArgsSerializable<T
 
 	fork(require.resolve('../dist/cli.js'), [logFilePath, argsStr], {
 		detached: true,
+		stdio   : 'ignore',
 	})
 		.unref()
 }
