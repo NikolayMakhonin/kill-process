@@ -39,8 +39,7 @@ export async function killProcess({
 										? '-' + signal
 										: signal,
 								], {
-									detached: true,
-									stdio   : ['inherit', 'pipe', 'pipe'],
+									stdio: ['inherit', 'pipe', 'pipe'],
 								})
 
 								let hasError
