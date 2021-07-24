@@ -63,7 +63,9 @@ describe('killProcess', function () {
 		let proc
 		let error
 		function startProc() {
-			proc = spawn('node', ['-e', command])
+			proc = spawn('node', ['-e', command], {
+				windowsHide: true,
+			})
 			proc.on('error', err => {
 				error = err
 			})
@@ -115,7 +117,9 @@ describe('killProcess', function () {
 		let proc
 		let error
 		function startProc() {
-			proc = spawn('node', ['-e', command])
+			proc = spawn('node', ['-e', command], {
+				windowsHide: true,
+			})
 			proc.on('error', err => {
 				error = err
 			})

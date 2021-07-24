@@ -15,7 +15,11 @@ describe('killProcessSeparate', function () {
 		let proc
 		let errors = []
 		function startProc() {
-			proc = spawn('node', ['-e', command])
+			proc = spawn('node', ['-e', command], {
+				detached: true,
+				windowsHide: true,
+			})
+			proc.unref()
 			proc.on('error', err => {
 				errors.push(err)
 			})
@@ -35,7 +39,8 @@ describe('killProcessSeparate', function () {
 				command,
 			], {
 				// detached: true,
-				stdio: ['inherit', 'ipc', 'pipe']
+				stdio: ['inherit', 'ipc', 'pipe'],
+				windowsHide: true,
 			})
 			// appProc.unref()
 			appProc.on('error', err => {
