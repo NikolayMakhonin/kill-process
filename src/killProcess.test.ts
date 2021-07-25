@@ -98,7 +98,7 @@ describe('killProcess', function () {
 		assert.ok(predicateCallsCount >= 4)
 
 		assert.ok(Array.isArray(result), 'result=' + result)
-		assert.ok(result.length === 3, `result.length=${result.length}: ` + JSON.stringify(result, null, 4))
+		assert.ok(result.length === (process.platform === 'win32' ? 4 : 3), `result.length=${result.length}: ` + JSON.stringify(result, null, 4))
 
 		assert.strictEqual(result[0].signal, 0)
 		assert.ok(result[0].process.command.indexOf(command) >= 0)
@@ -111,6 +111,12 @@ describe('killProcess', function () {
 		assert.strictEqual(result[2].signal, 'SIGINT')
 		assert.ok(result[2].process.command.indexOf(command) >= 0)
 		assert.ok(!result[2].error)
+
+		if (process.platform === 'win32') {
+			assert.strictEqual(result[3].signal, 'SIGKILL')
+			assert.ok(result[3].process.command.indexOf(command) >= 0)
+			assert.ok(!result[3].error)
+		}
 	})
 
 	it('timeout', async function () {
