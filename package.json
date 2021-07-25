@@ -58,9 +58,8 @@
 		"typescript": "^4.3.5"
 	},
 	"dependencies": {
-		"@flemist/find-process": "0.0.2",
-		"@flemist/ps-cross-platform": "0.0.4",
-		"abort-controller": "^3.0.0",
-		"tree-kill": "^1.2.2"
+		"@flemist/find-process": "0.0.3",
+		"@flemist/ps-cross-platform": "0.0.6",
+		"abort-controller": "^3.0.0"
 	}
 }

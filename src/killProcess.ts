@@ -52,9 +52,9 @@ export async function killProcess({
 						await kill(proc.pid, signal)
 					} catch (err) {
 						// ESRCH - process is not exist or killed before
-						if (err.code !== 'ESRCH') {
-							error = err
-						}
+						// if (err.code !== 'ESRCH') {
+						error = err
+						//}
 					}
 					killResults.push({
 						signal,

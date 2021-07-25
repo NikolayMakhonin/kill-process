@@ -1,6 +1,5 @@
 import {killProcessSeparate} from './killProcessSeparate'
 import {createLogErrorToFile} from './logErrorToFile'
-import {spawn} from 'child_process'
 
 setTimeout(() => {
 	// to prevent auto close process
@@ -10,13 +9,6 @@ const appLogFilePath = process.argv[2]
 const logFilePath = process.argv[3]
 const command = process.argv[4]
 const logError = createLogErrorToFile(appLogFilePath)
-
-// spawn('node', ['-e', command], {
-// 	// detached   : true,
-// 	windowsHide: true,
-// 	stdio      : 'ignore',
-// })
-	// .unref()
 
 function finalize() {
 	// logError('finalize')
