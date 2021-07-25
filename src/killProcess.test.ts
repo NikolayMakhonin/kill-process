@@ -4,7 +4,7 @@ import {spawn} from "child_process"
 import {killProcess} from './killProcess'
 import {delay} from './delay'
 
-xdescribe('killProcess', function () {
+describe('killProcess', function () {
 	this.timeout(60000)
 
 	it('empty stages', async function () {
