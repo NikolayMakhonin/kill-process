@@ -87,9 +87,7 @@ describe('killProcess', function () {
 			],
 			predicate(proc, processTree, stage, stageIndex, stages) {
 				predicateCallsCount++
-				if (process.platform !== 'linux') {
-					assert.ok(stage.signals[0] !== 'SIGKILL')
-				}
+				assert.ok(stage.signals[0] !== 'SIGKILL')
 				checkPredicateArgs(proc, processTree, stage, stageIndex, stages)
 				return proc.command.indexOf(command) >= 0
 			},

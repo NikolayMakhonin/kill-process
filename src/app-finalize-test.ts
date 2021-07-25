@@ -32,7 +32,7 @@ function finalize() {
 					if (proc.pid === state.ignorePid) {
 						return false
 					}
-					if (stage.signals[0] === 'SIGKILL' && process.platform !== 'linux') {
+					if (stage.signals[0] === 'SIGKILL') {
 						throw new Error('stage.signal === SIGKILL')
 					}
 					if (proc && typeof proc !== 'object') {
