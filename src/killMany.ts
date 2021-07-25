@@ -5,7 +5,7 @@ import {TKillProcessArgs, TKillResult} from './contracts'
 import {kill} from './kill'
 
 /** Return kill operations */
-export async function killProcess({
+export async function killMany({
 	description,
 	stages,
 	predicate,

@@ -1,3 +1,4 @@
 export * from './contracts'
-export * from './killProcess'
+export * from './kill'
+export * from './killMany'
 

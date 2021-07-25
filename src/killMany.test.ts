@@ -1,15 +1,15 @@
 /* eslint-disable no-shadow */
 import assert from 'assert'
 import {spawn} from "child_process"
-import {killProcess} from './killProcess'
+import {killMany} from './killMany'
 import {delay} from './delay'
 
-describe('killProcess', function () {
+describe('killMany', function () {
 	this.timeout(30000)
 
 	it('empty stages', async function () {
 		let predicateCallsCount = 0
-		await killProcess({
+		await killMany({
 			description: 'TestDescription',
 			stages: [
 				{}, {}, {},
@@ -41,7 +41,7 @@ describe('killProcess', function () {
 
 	it('not exist', async function () {
 		let predicateCallsCount = 0
-		const result = await killProcess({
+		const result = await killMany({
 			description: 'TestDescription',
 			stages: [
 				{signals: ['SIGKILL']},
@@ -76,7 +76,7 @@ describe('killProcess', function () {
 
 		let predicateCallsCount = 0
 
-		const result = await killProcess({
+		const result = await killMany({
 			description: 'TestDescription',
 			stages: [
 				{timeout: 1000},
@@ -140,7 +140,7 @@ describe('killProcess', function () {
 
 		const stage = {signal: 0, timeout: 1000}
 
-		await killProcess({
+		await killMany({
 			description: 'TestDescription',
 			stages: [
 				stage,

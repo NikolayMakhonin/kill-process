@@ -13,16 +13,12 @@ function exec(command: string, args: string[]) {
 
 		function end() {
 			const log = Buffer.concat(chunks).toString()
-			// process.stdout.write(Buffer.concat(chunks))
 			if (hasError) {
 				reject(new Error(log))
 				return
 			}
 			resolve(void 0)
 		}
-
-		// killProc.stdout.setEncoding('utf-8')
-		// killProc.stderr.setEncoding('utf-8')
 
 		killProc
 			.on('error', reject)
@@ -46,7 +42,8 @@ function exec(command: string, args: string[]) {
 export async function kill(pid: number, signal: TSignal) {
 	if (process.platform === 'win32') {
 		if (signal === 'SIGHUP' || signal === 'SIGINT' || signal === 'SIGTERM') {
-			// soft kill on Windows
+			// soft kill on Windows, worked only if app has windows
+			// !! It is not possible to soft kill process on windows in any other way !!
 			await exec('taskkill', [
 				'/PID',
 				pid.toString(),
@@ -56,6 +53,7 @@ export async function kill(pid: number, signal: TSignal) {
 		}
 	} else {
 		process.kill(pid, signal)
+
 		// await exec('kill', [
 		// 	typeof signal === 'number'
 		// 		? '-' + signal

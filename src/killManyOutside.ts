@@ -4,7 +4,7 @@ import {fork} from 'child_process'
 import {cliId} from './cliId'
 
 /** Kill processes in separated and detached process */
-export function killProcessSeparate<TState>(args: TKillProcessArgsSerializable<TState>) {
+export function killManyOutside<TState>(args: TKillProcessArgsSerializable<TState>) {
 	const _args: TKillProcessArgsSerialized<TState> = {
 		...args,
 		createPredicate: args.createPredicate.toString().trim(),

@@ -6,7 +6,7 @@ import assert from 'assert'
 import path from 'path'
 import fs from 'fs'
 
-describe('killProcessSeparate', function () {
+describe('killManyOutside', function () {
 	this.timeout(30000)
 
 	it('close with delay', async function () {

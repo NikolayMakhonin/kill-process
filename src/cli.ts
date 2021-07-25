@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {killProcess} from './killProcess'
+import {killMany} from './killMany'
 import {TKillProcessArgs, TKillProcessArgsSerialized} from './contracts'
 import {readStreamString} from './readStreamHelpers'
 import fs from 'fs'
@@ -92,7 +92,7 @@ async function kill() {
 	const args = await readArgs()
 	try {
 		const argsParsed = parseAndValidateArgs(args)
-		const result = await killProcess(argsParsed)
+		const result = await killMany(argsParsed)
 		// logError(JSON.stringify(result, null, 4))
 		return result
 	} catch (err) {

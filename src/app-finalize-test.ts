@@ -1,4 +1,4 @@
-import {killProcessSeparate} from './killProcessSeparate'
+import {killManyOutside} from './killManyOutside'
 import {createLogErrorToFile} from './logErrorToFile'
 // import readline from 'readline'
 
@@ -14,7 +14,7 @@ const logError = createLogErrorToFile(appLogFilePath)
 function finalize() {
 	// logError('finalize')
 	try {
-		killProcessSeparate({
+		killManyOutside({
 			description: 'TestDescription',
 			stages     : [
 				{timeout: 1000},
