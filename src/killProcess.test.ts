@@ -110,7 +110,7 @@ describe('killProcess', function () {
 
 		assert.strictEqual(result[2].signal, 'SIGINT')
 		assert.ok(result[2].process.command.indexOf(command) >= 0)
-		assert.ok(!result[2].error)
+		assert.ok(process.platform === 'win32' ? result[2].error : !result[2].error)
 
 		if (process.platform === 'win32') {
 			assert.strictEqual(result[3].signal, 'SIGKILL')
