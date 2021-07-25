@@ -1,5 +1,6 @@
 import {killProcessSeparate} from './killProcessSeparate'
 import {createLogErrorToFile} from './logErrorToFile'
+// import readline from 'readline'
 
 setTimeout(() => {
 	// to prevent auto close process
@@ -90,6 +91,26 @@ process.on('SIGTERM', () => {
 	logError('SIGTERM')
 	// finalize()
 })
+
+
+// if (process.platform === 'win32') {
+//   const rl = readline.createInterface({
+//     input : process.stdin,
+//     output: process.stdout,
+//   })
+//
+//   rl.on('SIGHUP', () => {
+//     process.emit('SIGHUP', 'SIGHUP')
+//   })
+//
+//   rl.on('SIGINT', () => {
+//     process.emit('SIGINT', 'SIGINT')
+//   })
+//
+//   rl.on('SIGTERM', () => {
+//     process.emit('SIGTERM', 'SIGTERM')
+//   })
+// }
 
 // finalize()
 setTimeout(() => {
