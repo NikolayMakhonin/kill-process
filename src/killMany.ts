@@ -103,7 +103,12 @@ export async function killMany({
 
 	throw new Error('Processes is not killed'
 		+ (description ? ': ' + description : '')
-		+ '\r\nkillOperations: ' + JSON.stringify(killResults, null, 4)
+		+ '\r\nkillOperations: ' + JSON.stringify(killResults.map(o => {
+			if (o.error) {
+				o.error = (o.error.stack || o.error.message || o.error) as any
+			}
+			return o
+		}), null, 4)
 		+ '\r\nprocesses: ' + (processes && JSON.stringify(processes, null, 4))
 		+ '\r\nstages: ' + JSON.stringify(stages, null, 4))
 }
