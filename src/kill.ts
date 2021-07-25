@@ -6,7 +6,7 @@ import {TSignal} from './contracts'
 export function kill(pid: number, signal: TSignal) {
 	// if (process.platform === 'win32') {
 	// 	treeKill(-pid, signal)
-		process.kill(pid)
+		process.kill(pid, signal)
 		return
 	// }
 

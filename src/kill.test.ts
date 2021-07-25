@@ -1,9 +1,9 @@
 /* eslint-disable no-shadow */
 import assert from 'assert'
 import {ChildProcess, spawn} from 'child_process'
-import {killProcess} from './killProcess'
 import {delay} from './delay'
 import {kill} from './kill'
+import {waitProcessTree} from '@flemist/find-process'
 
 describe('kill', function () {
 	this.timeout(60000)
@@ -31,13 +31,32 @@ describe('kill', function () {
 		assert.strictEqual(proc.exitCode, null)
 
 		process.kill(proc.pid, 0)
-		// proc.kill()
+		let result = await waitProcessTree({
+			description: 'TestDescription',
+			timeout: 1000,
+			checkInterval: 1000,
+			predicate(processTree) {
+				return Object.values(processTree).some(o => o.command.indexOf(command) >= 0)
+			},
+		})
+
+		assert.ok(Object.values(result).some(o => o.command.indexOf(command) >= 0))
+
+
 		kill(proc.pid, 'SIGKILL')
 		await delay(1000)
 
-		// process.kill(proc.pid, 0)
 		assert.throws(() => process.kill(proc.pid, 0))
 
-		// assert.strictEqual(proc.exitCode, 1)
+		result = await waitProcessTree({
+			description: 'TestDescription',
+			timeout: 1000,
+			checkInterval: 1000,
+			predicate(processTree) {
+				return Object.values(processTree).every(o => o.command.indexOf(command) < 0)
+			},
+		})
+
+		assert.ok(Object.values(result).every(o => o.command.indexOf(command) < 0))
 	})
 })
