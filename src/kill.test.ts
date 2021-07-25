@@ -43,7 +43,7 @@ describe('kill', function () {
 		assert.ok(Object.values(result).some(o => o.command.indexOf(command) >= 0))
 
 
-		await kill(proc.pid, 'SIGINT')
+		await kill(proc.pid, 'SIGKILL')
 		await delay(1000)
 
 		assert.throws(() => process.kill(proc.pid, 0))

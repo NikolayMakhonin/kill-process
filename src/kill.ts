@@ -13,7 +13,7 @@ function exec(command: string, args: string[]) {
 
 		function end() {
 			const log = Buffer.concat(chunks).toString()
-			process.stdout.write(Buffer.concat(chunks))
+			// process.stdout.write(Buffer.concat(chunks))
 			if (hasError) {
 				reject(new Error(log))
 				return
