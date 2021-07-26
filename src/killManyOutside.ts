@@ -7,11 +7,11 @@ import {cliId} from './cliId'
 export function killManyOutside<TState>(args: TKillProcessArgsSerializable<TState>) {
 	const _args: TKillProcessArgsSerialized<TState> = {
 		...args,
-		createPredicate: args.createPredicate.toString().trim(),
+		createFilter: args.createFilter.toString().trim(),
 	}
 
-	if (!/^(function\b|\w+\s*=>|\([^)]*\)\s*=>)/.test(_args.createPredicate)) {
-		_args.createPredicate = 'function ' + _args.createPredicate
+	if (!/^(function\b|\w+\s*=>|\([^)]*\)\s*=>)/.test(_args.createFilter)) {
+		_args.createFilter = 'function ' + _args.createFilter
 	}
 
 	const logFilePath = _args.logFilePath

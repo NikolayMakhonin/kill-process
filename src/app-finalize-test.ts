@@ -28,8 +28,10 @@ function finalize() {
 				command,
 			},
 			logFilePath,
-			createPredicate(state) {
-				return (proc, processTree) => {
+			createFilter(state) {
+				// eslint-disable-next-line global-require
+				const {createProcessTreeFilterByPredicate} = require('@flemist/find-process')
+				return createProcessTreeFilterByPredicate((proc, processTree) => {
 					if (proc.pid === state.ignorePid) {
 						return false
 					}
@@ -43,7 +45,7 @@ function finalize() {
 						throw new Error('proc=' + JSON.stringify(proc))
 					}
 					return proc.command.indexOf(state.command) >= 0
-				}
+				})
 			},
 		})
 	} catch (err) {

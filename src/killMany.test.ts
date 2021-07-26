@@ -3,6 +3,7 @@ import assert from 'assert'
 import {spawn} from "child_process"
 import {killMany} from './killMany'
 import {delay} from './delay'
+import {TProcessTree} from '@flemist/ps-cross-platform'
 
 describe('killMany', function () {
 	this.timeout(30000)
@@ -13,8 +14,8 @@ describe('killMany', function () {
 			stages: [
 				{}, {}, {},
 			],
-			predicate() {
-				return true
+			filter(processTree) {
+				return Object.values(processTree)
 			},
 		})
 			.then(() => {
@@ -25,27 +26,29 @@ describe('killMany', function () {
 			})
 	})
 
-	function checkPredicateArgs(proc, processTree) {
-		assert.ok(proc && typeof proc === 'object', 'proc=' + proc)
-		assert.ok(processTree && typeof processTree === 'object', 'processTree=' + processTree)
-		assert.strictEqual(processTree[proc.pid], proc, 'proc=' + JSON.stringify(proc))
+	function checkFilterArgs(processTree: TProcessTree) {
+		Object.values(processTree).map(proc => {
+			assert.ok(proc && typeof proc === 'object', 'proc=' + proc)
+			assert.ok(processTree && typeof processTree === 'object', 'processTree=' + processTree)
+			assert.strictEqual(processTree[proc.pid], proc, 'proc=' + JSON.stringify(proc))
+		})
 	}
 
 	it('not exist', async function () {
-		let predicateCallsCount = 0
+		let filterCallsCount = 0
 		const result = await killMany({
 			description: 'TestDescription',
 			stages: [
 				{signals: ['SIGKILL']},
 			],
-			predicate(proc, processTree) {
-				checkPredicateArgs(proc, processTree)
-				predicateCallsCount++
-				return false
+			filter(processTree) {
+				checkFilterArgs(processTree)
+				filterCallsCount++
+				return null
 			},
 		})
 
-		assert.ok(predicateCallsCount >= 4)
+		assert.strictEqual(filterCallsCount, 2)
 		assert.deepStrictEqual(result, [])
 	})
 
@@ -66,7 +69,7 @@ describe('killMany', function () {
 		startProc()
 		await delay(1000)
 
-		let predicateCallsCount = 0
+		let filterCallsCount = 0
 
 		const result = await killMany({
 			description: 'TestDescription',
@@ -77,32 +80,32 @@ describe('killMany', function () {
 				{signals: ['SIGINT'], timeout: 1000},
 				{signals: ['SIGKILL'], timeout: 1000},
 			],
-			predicate(proc, processTree) {
-				predicateCallsCount++
-				checkPredicateArgs(proc, processTree)
-				return proc.command.indexOf(command) >= 0
+			filter(processTree) {
+				filterCallsCount++
+				checkFilterArgs(processTree)
+				return Object.values(processTree).filter(proc => proc.command.indexOf(command) >= 0)
 			},
 		})
 
-		assert.ok(predicateCallsCount >= 4)
+		assert.ok(filterCallsCount >= 4)
 
 		assert.ok(Array.isArray(result), 'result=' + result)
 		assert.ok(result.length === (process.platform === 'win32' ? 4 : 3), `result.length=${result.length}: ` + JSON.stringify(result, null, 4))
 
-		assert.strictEqual(result[0].signal, 0)
+		assert.deepStrictEqual(result[0].signals, [0])
 		assert.ok(result[0].process.command.indexOf(command) >= 0)
 		assert.ok(!result[0].error)
 
-		assert.strictEqual(result[1].signal, 'IncorrectSignal')
+		assert.deepStrictEqual(result[1].signals, ['IncorrectSignal'])
 		assert.ok(result[1].process.command.indexOf(command) >= 0)
 		assert.ok(result[1].error)
 
-		assert.strictEqual(result[2].signal, 'SIGINT')
+		assert.deepStrictEqual(result[2].signals, ['SIGINT'])
 		assert.ok(result[2].process.command.indexOf(command) >= 0)
 		assert.ok(process.platform === 'win32' ? result[2].error : !result[2].error)
 
 		if (process.platform === 'win32') {
-			assert.strictEqual(result[3].signal, 'SIGKILL')
+			assert.deepStrictEqual(result[3].signals, ['SIGKILL'])
 			assert.ok(result[3].process.command.indexOf(command) >= 0)
 			assert.ok(!result[3].error)
 		}
@@ -122,7 +125,7 @@ describe('killMany', function () {
 			})
 		}
 
-		let predicateCallsCount = 0
+		let filterCallsCount = 0
 
 		startProc()
 		await delay(1000)
@@ -134,10 +137,10 @@ describe('killMany', function () {
 			stages: [
 				stage,
 			],
-			predicate(proc, processTree) {
-				predicateCallsCount++
-				checkPredicateArgs(proc, processTree)
-				return proc.command.indexOf(command) >= 0
+			filter(processTree) {
+				filterCallsCount++
+				checkFilterArgs(processTree)
+				return Object.values(processTree).filter(proc => proc.command.indexOf(command) >= 0)
 			},
 		})
 			.then(() => {
@@ -147,7 +150,7 @@ describe('killMany', function () {
 				assert.ok(/\bTestDescription\b/.test(err.message), err.message)
 			})
 
-		assert.ok(predicateCallsCount >= 4)
+		assert.ok(filterCallsCount >= 4)
 
 		if (proc) {
 			process.kill(proc.pid, 'SIGKILL')

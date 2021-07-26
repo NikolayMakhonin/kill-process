@@ -1,4 +1,5 @@
-import {TProcessNode, TProcessTree} from '@flemist/ps-cross-platform'
+import {TProcessIdentity} from '@flemist/ps-cross-platform'
+import {TProcessTreeFilter} from '@flemist/find-process'
 
 export type TSignal = NodeJS.Signals | number
 
@@ -8,33 +9,33 @@ export type TKillStage = {
 	timeout?: number
 }
 
-export type TKillProcessPredicate = (
-	proc: TProcessNode,
-	processTree: TProcessTree,
-) => boolean
-
 export type TKillProcessArgs = {
 	description?: string,
 	stages: TKillStage[],
-	predicate: TKillProcessPredicate,
+	filter: TProcessTreeFilter,
 }
 
-export type TKillProcessArgsSerializable<TState> = Omit<TKillProcessArgs, 'predicate'> & {
-	state?: TState
+export type TCreateKillProcessFilter<TState> = (state: TState) => TProcessTreeFilter
+
+export type TCreateKillProcessFilterWithState<TState> = {
+	state: TState
+	createFilter: (state: TState) => TProcessTreeFilter
+}
+
+export type TKillProcessArgsSerializable<TState> = Omit<TKillProcessArgs, 'filter'> & {
 	/** For write errors to file. Use absolute path. */
 	logFilePath?: string
-	createPredicate: (state: TState) => TKillProcessPredicate
-}
+} & TCreateKillProcessFilterWithState<TState>
 
 export type TKillProcessArgsSerialized<TState> = Omit<
 	TKillProcessArgsSerializable<TState>,
-	'createPredicate'
+	'createFilter'
 > & {
-	createPredicate: string
+	createFilter: string
 }
 
 export type TKillResult = {
-	signal: TSignal
-	process: TProcessNode
+	signals: TSignal[]
+	process: TProcessIdentity
 	error?: Error
 }

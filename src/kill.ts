@@ -39,7 +39,7 @@ function exec(command: string, args: string[]) {
 	})
 }
 
-export async function kill(pid: number, signal: TSignal) {
+async function _kill(pid: number, signal: TSignal) {
 	if (process.platform === 'win32') {
 		if (signal === 'SIGHUP' || signal === 'SIGINT' || signal === 'SIGTERM') {
 			// soft kill on Windows, worked only if app has windows
@@ -60,5 +60,29 @@ export async function kill(pid: number, signal: TSignal) {
 		// 		: '-' + signal.replace(/^sig/i, '').toUpperCase(),
 		// 	pid.toString(),
 		// ])
+	}
+}
+
+export async function kill(pid: number, signals: TSignal[])
+export async function kill(pid: number, ...signals: TSignal[])
+export async function kill(pid: number, ...signals: (TSignal[]|TSignal)[]) {
+	const _signals = signals.flatMap(o => Array.isArray(o) ? o : [o])
+	let hasNoError = false
+	let error
+	for (let i = 0; i < _signals.length; i++) {
+		const signal = _signals[i]
+		try {
+			// eslint-disable-next-line no-await-in-loop
+			await _kill(pid, signal)
+			hasNoError = true
+		} catch (err) {
+			// ESRCH - process is not exist or killed before
+			// if (err.code !== 'ESRCH') {
+			error = err
+			// }
+		}
+	}
+	if (!hasNoError && error) {
+		throw error
 	}
 }

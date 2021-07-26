@@ -11,8 +11,8 @@ describe('kill', function () {
 	it('base', async function () {
  		const command = `setTimeout(function() { console.log('Completed') }, 30000)`
 
-		let proc: ChildProcess
-		let error
+		let proc: ChildProcess = null
+		// let error
 		function startProc() {
 			proc = spawn('node', ['-e', command], {
 				detached: true,

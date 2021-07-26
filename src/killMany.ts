@@ -1,6 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import {findInProcessTree} from '@flemist/find-process'
-import {TProcessNode} from '@flemist/ps-cross-platform'
+import {psTree, TProcessIdentity} from '@flemist/ps-cross-platform'
 import {TKillProcessArgs, TKillResult, TSignal} from './contracts'
 import {kill} from './kill'
 
@@ -8,13 +7,13 @@ import {kill} from './kill'
 export async function killMany({
 	description,
 	stages,
-	predicate,
+	filter,
 }: TKillProcessArgs): Promise<TKillResult[]> {
 	const killResults: TKillResult[] = []
-	let processes: TProcessNode[]
+	let processes: TProcessIdentity[]
 
 	type TProcessState = {
-		proc: TProcessNode
+		proc: TProcessIdentity
 		nextStageIndex: number
 		waitTime: number
 		killPromise: Promise<boolean>
@@ -24,42 +23,39 @@ export async function killMany({
 		[uniqueId: string]: TProcessState
 	} = {}
 
-	async function _killProc(proc: TProcessNode, signals: TSignal[]): Promise<boolean> {
-		if (!signals || signals.length === 0) {
-			return true
-		}
+	function createProcUniqueId(proc: TProcessIdentity) {
+		return JSON.stringify({
+			pid    : proc.pid,
+			command: proc.command,
+		})
+	}
 
-		let hasNoError = false
-		for (let j = 0; j < signals.length; j++) {
-			const signal = signals[j]
-			let error
-			try {
-				await kill(proc.pid, signal)
-			} catch (err) {
-				// ESRCH - process is not exist or killed before
-				// if (err.code !== 'ESRCH') {
-				error = err
-				// }
+	async function _killProc(proc: TProcessIdentity, signals: TSignal[]): Promise<boolean> {
+		try {
+			await kill(proc.pid, signals)
+			if (signals && signals.length === 0) {
+				killResults.push({
+					signals,
+					process: proc,
+				})
 			}
+			return true
+		} catch (error) {
 			killResults.push({
-				signal,
+				signals,
 				process: proc,
 				error,
 			})
-			if (!error) {
-				hasNoError = true
-			}
+			return false
 		}
-
-		return hasNoError
 	}
 
 	let error: Error = null
 
 	while (true) {
-		processes = await findInProcessTree((proc, processTree) => {
-			return predicate(proc, processTree)
-		})
+		const processTree = filter(await psTree())
+
+		processes = Object.values(processTree)
 
 		if (processes.length === 0) {
 			return killResults
@@ -73,7 +69,7 @@ export async function killMany({
 		const now = Date.now()
 		for (let i = 0; i < processes.length; i++) {
 			const proc = processes[i]
-			const uniqueId = JSON.stringify(proc)
+			const uniqueId = createProcUniqueId(proc)
 			let state = states[uniqueId]
 			if (!state) {
 				states[uniqueId] = state = {

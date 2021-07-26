@@ -7,6 +7,7 @@ import fs from 'fs'
 import path from 'path'
 import {createLogErrorToFile} from './logErrorToFile'
 import {cliId} from './cliId'
+import {TProcessTreeFilter, createProcessTreeFilterByPredicate} from '@flemist/find-process'
 
 const logFilePath = (process.argv[2] || process.env.KILL_PROCESS_LOG_PATH || '').trim()
 const logError = createLogErrorToFile(logFilePath)
@@ -27,12 +28,19 @@ async function readArgs(): Promise<TKillProcessArgsSerialized<any>> {
 	}
 }
 
+const excludeCurrentProcessFilter: TProcessTreeFilter = createProcessTreeFilterByPredicate((proc) => {
+	if (proc.pid === process.pid || proc.command.indexOf(cliId) >= 0) {
+		return false
+	}
+	return true
+})
+
 function parseAndValidateArgs(args: TKillProcessArgsSerialized<any>): TKillProcessArgs {
 	if (!(args instanceof Object)) {
 		throw Error('The args is not an object')
 	}
-	if (typeof args.createPredicate !== 'string') {
-		throw Error('The predicate is not a function as string')
+	if (typeof args.createFilter !== 'string') {
+		throw Error('The filter is not a function as string')
 	}
 	if (args.description && typeof args.description !== 'string') {
 		throw Error('The description is not a string')
@@ -63,23 +71,21 @@ function parseAndValidateArgs(args: TKillProcessArgsSerialized<any>): TKillProce
 	})
 
 	// eslint-disable-next-line no-new-func
-	const createPredicate = Function(`return (${args.createPredicate})`)()
-	if (typeof createPredicate !== 'function') {
-		throw Error('The createPredicate is not a function')
+	const createFilter = Function(`return (${args.createFilter})`)()
+	if (typeof createFilter !== 'function') {
+		throw Error('The createFilter is not a function')
 	}
-	const predicate = createPredicate(args.state)
-	if (typeof predicate !== 'function') {
-		throw Error('The predicate is not a function')
+	const filter: TProcessTreeFilter = createFilter(args.state)
+	if (typeof filter !== 'function') {
+		throw Error('The filter is not a function')
 	}
 
 	return {
 		...args,
 		// eslint-disable-next-line func-name-matching
-		predicate: function _predicate(proc) {
-			if (proc.pid === process.pid || proc.command.indexOf(cliId) >= 0) {
-				return false
-			}
-			const result = predicate.apply(this, arguments)
+		filter: function _filter(processTree) {
+			let result = excludeCurrentProcessFilter(processTree)
+			result = filter(result)
 			// if (result && stage.signals[0] === 'SIGINT') {
 			// 	logError('stage.signal === SIGINT\r\n' + JSON.stringify(proc, null, 4))
 			// }
