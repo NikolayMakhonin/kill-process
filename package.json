@@ -1,6 +1,6 @@
 {
 	"name": "@flemist/kill-process",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "Cross-platform flexible kill processes or correct finalize multi-processes app. With minimum code using ps (for Unix) and wmic (for Windows)",
 	"author": {
 		"name": "Nikolay Makhonin",
@@ -58,7 +58,7 @@
 		"typescript": "^4.3.5"
 	},
 	"dependencies": {
-		"@flemist/find-process": "0.0.10",
+		"@flemist/find-process": "0.0.12",
 		"@flemist/ps-cross-platform": "0.0.11",
 		"abort-controller": "^3.0.0"
 	}

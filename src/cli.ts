@@ -8,12 +8,7 @@ import path from 'path'
 import {createLogErrorToFile} from './logErrorToFile'
 import {cliId} from './cliId'
 import {TProcessTreeFilter, createProcessTreeFilterByPredicate} from '@flemist/find-process'
-
-// eslint-disable-next-line @typescript-eslint/ban-types
-const createFunction = (functionStr: string): Function => {
-	// eslint-disable-next-line no-new-func,no-eval
-	return Function(`return (${functionStr})`)
-}
+import {createFunction} from './createFunction'
 
 const logFilePath = (process.argv[2] || process.env.KILL_PROCESS_LOG_PATH || '').trim()
 const logError = createLogErrorToFile(logFilePath)
@@ -76,7 +71,7 @@ function parseAndValidateArgs(args: TKillProcessArgsSerialized<any>): TKillProce
 		}
 	})
 
-	const createFilter = createFunction(args.createFilter)()
+	const createFilter = createFunction(args.createFilter)
 	if (typeof createFilter !== 'function') {
 		throw Error('The createFilter is not a function')
 	}
@@ -88,9 +83,9 @@ function parseAndValidateArgs(args: TKillProcessArgsSerialized<any>): TKillProce
 	return {
 		...args,
 		// eslint-disable-next-line func-name-matching
-		filter: function _filter(processTree) {
-			let result = excludeCurrentProcessFilter(processTree)
-			result = filter(result)
+		filter: function _filter(processTree, firstFilter) {
+			let result = excludeCurrentProcessFilter(processTree, firstFilter)
+			result = filter(result, firstFilter)
 			// if (result && stage.signals[0] === 'SIGINT') {
 			// 	logError('stage.signal === SIGINT\r\n' + JSON.stringify(proc, null, 4))
 			// }

@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import {psTree, TProcessIdentity} from '@flemist/ps-cross-platform'
+import {psTree, TProcessIdentity, TProcessNode} from '@flemist/ps-cross-platform'
 import {TKillProcessArgs, TKillResult, TSignal} from './contracts'
 import {kill} from './kill'
 
@@ -10,7 +10,7 @@ export async function killMany({
 	filter,
 }: TKillProcessArgs): Promise<TKillResult[]> {
 	const killResults: TKillResult[] = []
-	let processes: TProcessIdentity[]
+	let processes: TProcessNode[]
 
 	type TProcessState = {
 		proc: TProcessIdentity
@@ -52,10 +52,20 @@ export async function killMany({
 
 	let error: Error = null
 	let prevCountActive: number = null
+	let firstFilter = true
 
 	while (true) {
-		const processTree = filter(await psTree())
-		processes = processTree && Object.values(processTree) || []
+		const processTree = await psTree()
+		const filteredProcessTree = filter(processTree, firstFilter)
+		firstFilter = false
+		if (processes) {
+			processes.forEach(proc => {
+				if (!filteredProcessTree[proc.pid] && processTree[proc.pid]) {
+					filteredProcessTree[proc.pid] = proc
+				}
+			})
+		}
+		processes = filteredProcessTree && Object.values(filteredProcessTree) || []
 
 		if (processes.length === 0) {
 			return killResults
