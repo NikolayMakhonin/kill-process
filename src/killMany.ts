@@ -13,10 +13,20 @@ export async function killMany({
 	const killResults: TKillResult[] = []
 	let processes: TProcessNode[]
 
-	async function iteration(stageIndex: number): Promise<boolean> {
+	let stageIndex = 0
+	async function iteration(): Promise<boolean> {
+		if (stageIndex >= stages.length) {
+			return true
+		}
+
 		const stage = stages[stageIndex]
 
-		if (stage.signals) {
+		let timeout = stage.timeout
+
+		if (stage.signals && stage.signals.length > 0) {
+			let maxTimeout = 0
+			let minStageIndex = stages.length - 1
+
 			processes = await findInProcessTree((proc, processTree) => {
 				return predicate(proc, processTree, stage, stageIndex, stages)
 			})
@@ -25,49 +35,47 @@ export async function killMany({
 				return true
 			}
 
-			// for (let i = 0; i < processes.length; i++) {
-			// 	const proc = processes[i]
-			// 	for (let j = 0; j < stage.signals.length; j++) {
-			// 		const signal = stage.signals[j]
-			// 		try {
-			// 			process.kill(proc.pid, signal)
-			// 			killResults.push({
-			// 				signal,
-			// 				process: proc,
-			// 			})
-			// 		} catch (error) {
-			// 			killResults.push({
-			// 				signal,
-			// 				process: proc,
-			// 				error,
-			// 			})
-			// 		}
-			// 	}
-			// }
-
-			await Promise.all(processes.flatMap(proc => {
-				return stage.signals.map(async signal => {
-					let error
-					try {
-						await kill(proc.pid, signal)
-					} catch (err) {
-						// ESRCH - process is not exist or killed before
-						// if (err.code !== 'ESRCH') {
-						error = err
-						// }
+			await Promise.all(processes.map(async proc => {
+				for (let i = stageIndex; i < stages.length; i++) {
+					const {signals, timeout: _timeout} = stages[i]
+					for (let j = 0; j < signals.length; j++) {
+						const signal = signals[j]
+						let error
+						try {
+							await kill(proc.pid, signal)
+						} catch (err) {
+							// ESRCH - process is not exist or killed before
+							// if (err.code !== 'ESRCH') {
+							error = err
+							// }
+						}
+						killResults.push({
+							signal,
+							process: proc,
+							error,
+						})
+						if (!error) {
+							if (stageIndex < minStageIndex) {
+								minStageIndex = stageIndex
+							}
+							if (_timeout > maxTimeout) {
+								maxTimeout = _timeout
+							}
+						}
 					}
-					killResults.push({
-						signal,
-						process: proc,
-						error,
-					})
-				})
+					if (maxTimeout > 0) {
+						break
+					}
+				}
 			}))
+
+			stageIndex = minStageIndex
+			timeout = maxTimeout
 		}
 
-		if (stage.timeout) {
+		if (timeout) {
 			const waitResult = await waitProcessTree({
-				timeout      : stage.timeout,
+				timeout,
 				checkInterval: 100,
 				predicate(processTree) {
 					processes = Object.values(processTree)
@@ -83,13 +91,17 @@ export async function killMany({
 			}
 		}
 
+		stageIndex++
+
 		return false
 	}
 
-	for (let stageIndex = 0; stageIndex < stages.length; stageIndex++) {
-		if (await iteration(stageIndex)) {
-			return killResults
-		}
+	while (!(await iteration())) {
+		// empty
+	}
+
+	if (processes && processes.length === 0) {
+		return killResults
 	}
 
 	if (!processes) {
