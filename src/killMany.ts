@@ -8,6 +8,7 @@ export async function killMany({
 	description,
 	stages,
 	filter,
+	waitNewProcessesTime,
 }: TKillProcessArgs): Promise<TKillResult[]> {
 	const killResults: TKillResult[] = []
 	let processes: TProcessNode[]
@@ -53,23 +54,43 @@ export async function killMany({
 	let error: Error = null
 	let prevCountActive: number = null
 	let firstFilter = true
+	let prevProcesses = []
+	let noProcessesTime = 0
 
 	while (true) {
-		const processTree = await psTree()
-		const filteredProcessTree = filter(processTree, firstFilter)
+		const processTree = await psTree(prevProcesses)
+		prevProcesses = Object.values(processTree)
+
+		let filteredProcessTree = filter(processTree, firstFilter)
 		firstFilter = false
 		if (processes) {
 			processes.forEach(proc => {
-				if (!filteredProcessTree[proc.pid] && processTree[proc.pid]) {
-					filteredProcessTree[proc.pid] = proc
+				if (!filteredProcessTree[proc.pid]) {
+					const foundProc = processTree[proc.pid]
+					if (!foundProc.closed) {
+						filteredProcessTree[proc.pid] = proc
+					}
 				}
 			})
 		}
+		// filteredProcessTree = processTreeFilterOpened(filteredProcessTree, firstFilter)
 		processes = filteredProcessTree && Object.values(filteredProcessTree) || []
 
-		if (processes.length === 0) {
+		const _processes = processes.filter(o => !o.closed)
+
+		if (_processes.length === 0) {
+			if (waitNewProcessesTime) {
+				if (!noProcessesTime) {
+					noProcessesTime = Date.now()
+					continue
+				} else if (noProcessesTime + waitNewProcessesTime >= Date.now()) {
+					continue
+				}
+			}
 			return killResults
 		}
+
+		noProcessesTime = 0
 
 		if (error) {
 			throw error
@@ -81,8 +102,8 @@ export async function killMany({
 
 		let countActive = 0
 		const now = Date.now()
-		for (let i = 0; i < processes.length; i++) {
-			const proc = processes[i]
+		for (let i = 0; i < _processes.length; i++) {
+			const proc = _processes[i]
 			const uniqueId = createProcUniqueId(proc)
 			let state = states[uniqueId]
 			if (!state) {
@@ -127,8 +148,11 @@ export async function killMany({
 		prevCountActive = countActive
 	}
 
-	if (processes && processes.length === 0) {
-		return killResults
+	if (processes) {
+		const _processes = processes.filter(o => !o.closed)
+		if (_processes.length === 0) {
+			return killResults
+		}
 	}
 
 	if (!processes) {

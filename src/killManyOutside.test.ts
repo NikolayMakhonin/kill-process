@@ -34,7 +34,7 @@ describe('killManyOutside', function () {
 
 		try {
 			const appProc = spawn('node', [
-				require.resolve('../dist/app-finalize-test.js'),
+				require.resolve('../dist/killManyOutside-test.js'),
 				appLogFilePath,
 				logFilePath,
 				command,
@@ -67,7 +67,7 @@ describe('killManyOutside', function () {
 				checkInterval: 100,
 				description: 'Wait app open',
 				predicate(processList) {
-					return processList.some(o => o.command.indexOf('app-finalize-test') >= 0)
+					return processList.some(o => o.command.indexOf('killManyOutside-test') >= 0)
 				}
 			})
 
@@ -83,7 +83,7 @@ describe('killManyOutside', function () {
 				checkInterval: 100,
 				description: 'Wait app close',
 				predicate(processList) {
-					return processList.every(o => o.command.indexOf('app-finalize-test') < 0)
+					return processList.every(o => o.command.indexOf('killManyOutside-test') < 0)
 						&& processList.some(o => o.command.indexOf(command) >= 0)
 						&& processList.some(o => /dist[\\/]cli.js/.test(o.command))
 				}
@@ -94,7 +94,7 @@ describe('killManyOutside', function () {
 				checkInterval: 100,
 				description: 'Wait app closer',
 				predicate(processList) {
-					return processList.every(o => o.command.indexOf('app-finalize-test') < 0)
+					return processList.every(o => o.command.indexOf('killManyOutside-test') < 0)
 						&& processList.every(o => !/dist[\\/]cli.js/.test(o.command))
 				}
 			})
@@ -104,7 +104,7 @@ describe('killManyOutside', function () {
 				checkInterval: 100,
 				description: 'Wait app finalize',
 				predicate(processList) {
-					return processList.every(o => o.command.indexOf('app-finalize-test') < 0)
+					return processList.every(o => o.command.indexOf('killManyOutside-test') < 0)
 						&& processList.every(o => o.command.indexOf(command) < 0)
 						&& processList.every(o => !/dist[\\/]cli.js/.test(o.command))
 				}

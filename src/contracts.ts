@@ -14,6 +14,7 @@ export type TKillProcessArgs = {
 	description?: string,
 	stages: TKillStage[],
 	filter: TProcessTreeFilter,
+	waitNewProcessesTime?: number
 }
 
 export type TCreateKillProcessFilter<TState> = (state: TState) => TProcessTreeFilter

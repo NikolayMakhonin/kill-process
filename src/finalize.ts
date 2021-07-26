@@ -15,8 +15,10 @@ export function finalizeProcesses<TState>({
 	softKillFirst,
 	softKillDelay = SOFT_KILL_DELAY_DEFAULT,
 	outside,
+	waitNewProcessesTime = 1000,
 	state,
 	createFilter,
+	logFilePath,
 }: {
 	description?: string,
 	firstDelay?: number,
@@ -24,6 +26,8 @@ export function finalizeProcesses<TState>({
 	softKillDelay?: number,
 	/** In separated and detached process */
 	outside?: boolean,
+	waitNewProcessesTime?: number,
+	logFilePath?: string,
 	// filters?: TProcessTreeFilterArgs,
 } & TCreateKillProcessFilterWithState<TState>): Promise<TKillResult[]> {
 	const stages: TKillStage[] = []
@@ -42,7 +46,9 @@ export function finalizeProcesses<TState>({
 			description,
 			stages,
 			state,
+			waitNewProcessesTime,
 			createFilter,
+			logFilePath,
 		}) as any
 	} else {
 		const filter = createFilter(state, require)
@@ -51,6 +57,7 @@ export function finalizeProcesses<TState>({
 			description,
 			stages,
 			filter,
+			waitNewProcessesTime,
 		})
 	}
 }
@@ -60,11 +67,15 @@ export function finalizeCurrentProcess({
 	firstDelay,
 	softKillFirst = true,
 	softKillDelay = SOFT_KILL_DELAY_DEFAULT,
+	waitNewProcessesTime = 1000,
+	logFilePath,
 }: {
 	description?: string,
 	firstDelay?: number,
 	softKillFirst?: boolean,
 	softKillDelay?: number,
+	waitNewProcessesTime?: number,
+	logFilePath?: string,
 }) {
 	// noinspection JSIgnoredPromiseFromCall
 	finalizeProcesses({
@@ -73,6 +84,7 @@ export function finalizeCurrentProcess({
 		softKillFirst,
 		softKillDelay,
 		outside    : true,
+		waitNewProcessesTime,
 		state      : {
 			pid: process.pid,
 		},
@@ -82,5 +94,6 @@ export function finalizeCurrentProcess({
 				parentsPids: [state.pid],
 			})
 		},
+		logFilePath,
 	})
 }
