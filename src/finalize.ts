@@ -65,8 +65,9 @@ export function finalizeCurrentProcess({
 	firstDelay?: number,
 	softKillFirst?: boolean,
 	softKillDelay?: number,
-}): Promise<TKillResult[]> {
-	return finalizeProcesses({
+}) {
+	// noinspection JSIgnoredPromiseFromCall
+	finalizeProcesses({
 		description: description || 'finalizeCurrentProcess',
 		firstDelay,
 		softKillFirst,

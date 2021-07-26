@@ -1,6 +1,6 @@
 {
 	"name": "@flemist/kill-process",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"description": "Cross-platform flexible kill processes or correct finalize multi-processes app. With minimum code using ps (for Unix) and wmic (for Windows)",
 	"author": {
 		"name": "Nikolay Makhonin",
