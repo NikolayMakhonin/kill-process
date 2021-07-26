@@ -60,7 +60,7 @@ describe('finalize', function () {
 			assert.ok(processes.length >= 2)
 
 			await waitProcessList({
-				timeout: 5000,
+				timeout: 10000,
 				checkInterval: 100,
 				description: 'Wait app closer',
 				predicate(processList) {
