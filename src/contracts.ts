@@ -1,5 +1,6 @@
 import {TProcessIdentity} from '@flemist/ps-cross-platform'
-import {TProcessTreeFilter} from '@flemist/find-process'
+import {TProcessTreeFilter, TProcessTreeFilterArgs} from '@flemist/find-process'
+import {TFindInFilterPredicate} from '@flemist/find-process/dist/factories'
 
 export type TSignal = NodeJS.Signals | number
 
@@ -32,6 +33,23 @@ export type TKillProcessArgsSerialized<TState> = Omit<
 	'createFilter'
 > & {
 	createFilter: string
+}
+
+export type TCreateFindInFilterPredicateWithState<TState> = {
+	state: TState
+	createFilter: (state: TState, _require: typeof require) => TFindInFilterPredicate
+}
+
+export type TCreateProcessTreeFilterArgsWithState<TState> = {
+	state: TState
+	filters: (state: TState, _require: typeof require) => TProcessTreeFilterArgs
+}
+
+export type TProcessTreeFilterArgsSerialized = Omit<
+	TProcessTreeFilterArgs,
+	'parentsPredicate'
+> & {
+	createParentsPredicate?: string,
 }
 
 export type TKillResult = {

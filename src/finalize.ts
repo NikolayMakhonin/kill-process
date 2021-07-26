@@ -1,19 +1,22 @@
 /* eslint-disable no-else-return */
 import {killMany} from './killMany'
-import {TKillResult, TKillStage} from './contracts'
+import {
+	TCreateKillProcessFilterWithState,
+	TKillResult,
+	TKillStage,
+} from './contracts'
 import {killManyOutside} from './killManyOutside'
-import {createProcessTreeFilter, TProcessTreeFilterArgs} from '@flemist/find-process'
-import {createKillOutsideFilter} from './factories'
 
 const SOFT_KILL_DELAY_DEFAULT = 30000
 
-export async function finalizeProcesses({
+export function finalizeProcesses<TState>({
 	description,
 	firstDelay,
 	softKillFirst,
 	softKillDelay = SOFT_KILL_DELAY_DEFAULT,
 	outside,
-	filters,
+	state,
+	createFilter,
 }: {
 	description?: string,
 	firstDelay?: number,
@@ -21,8 +24,8 @@ export async function finalizeProcesses({
 	softKillDelay?: number,
 	/** In separated and detached process */
 	outside?: boolean,
-	filters: TProcessTreeFilterArgs
-}): Promise<TKillResult[]> {
+	// filters?: TProcessTreeFilterArgs,
+} & TCreateKillProcessFilterWithState<TState>): Promise<TKillResult[]> {
 	const stages: TKillStage[] = []
 	if (firstDelay) {
 		stages.push({timeout: firstDelay})
@@ -35,15 +38,14 @@ export async function finalizeProcesses({
 	stages.push({signals: ['SIGKILL'], timeout: softKillDelay})
 
 	if (outside) {
-		const filter = await createKillOutsideFilter(filters)
-
 		return killManyOutside({
 			description,
 			stages,
-			...filter,
+			state,
+			createFilter,
 		}) as any
 	} else {
-		const filter = await createProcessTreeFilter(filters)
+		const filter = createFilter(state, require)
 
 		return killMany({
 			description,
