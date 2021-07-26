@@ -54,3 +54,32 @@ export function finalizeProcesses<TState>({
 		})
 	}
 }
+
+export function finalizeCurrentProcess({
+	description,
+	firstDelay,
+	softKillFirst = true,
+	softKillDelay = SOFT_KILL_DELAY_DEFAULT,
+}: {
+	description?: string,
+	firstDelay?: number,
+	softKillFirst?: boolean,
+	softKillDelay?: number,
+}): Promise<TKillResult[]> {
+	return finalizeProcesses({
+		description: description || 'finalizeCurrentProcess',
+		firstDelay,
+		softKillFirst,
+		softKillDelay,
+		outside    : true,
+		state      : {
+			pid: process.pid,
+		},
+		createFilter(state, _require) {
+			const {createProcessTreeFilter} = _require('@flemist/find-process')
+			return createProcessTreeFilter({
+				parentsPids: [state.pid],
+			})
+		},
+	})
+}
