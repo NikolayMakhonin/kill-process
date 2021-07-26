@@ -11,9 +11,6 @@ export type TKillStage = {
 export type TKillProcessPredicate = (
 	proc: TProcessNode,
 	processTree: TProcessTree,
-	stage: TKillStage,
-	stageIndex: number,
-	stages: TKillStage[],
 ) => boolean
 
 export type TKillProcessArgs = {

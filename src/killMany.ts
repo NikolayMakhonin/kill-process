@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
-import {findInProcessTree, waitProcessTree} from '@flemist/find-process'
+import {findInProcessTree} from '@flemist/find-process'
 import {TProcessNode} from '@flemist/ps-cross-platform'
-import {TKillProcessArgs, TKillResult} from './contracts'
+import {TKillProcessArgs, TKillResult, TSignal} from './contracts'
 import {kill} from './kill'
 
 /** Return kill operations */
@@ -13,91 +13,110 @@ export async function killMany({
 	const killResults: TKillResult[] = []
 	let processes: TProcessNode[]
 
-	let stageIndex = 0
-	async function iteration(): Promise<boolean> {
-		if (stageIndex >= stages.length) {
+	type TProcessState = {
+		proc: TProcessNode
+		nextStageIndex: number
+		waitTime: number
+		killPromise: Promise<boolean>
+		error: Error
+	}
+	const states: {
+		[uniqueId: string]: TProcessState
+	} = {}
+
+	async function _killProc(proc: TProcessNode, signals: TSignal[]): Promise<boolean> {
+		if (!signals || signals.length === 0) {
 			return true
 		}
 
-		const stage = stages[stageIndex]
-
-		let timeout = stage.timeout
-
-		if (stage.signals && stage.signals.length > 0) {
-			let maxTimeout = 0
-			let minStageIndex = stages.length - 1
-
-			processes = await findInProcessTree((proc, processTree) => {
-				return predicate(proc, processTree, stage, stageIndex, stages)
-			})
-
-			if (processes.length === 0) {
-				return true
+		let hasNoError = false
+		for (let j = 0; j < signals.length; j++) {
+			const signal = signals[j]
+			let error
+			try {
+				await kill(proc.pid, signal)
+			} catch (err) {
+				// ESRCH - process is not exist or killed before
+				// if (err.code !== 'ESRCH') {
+				error = err
+				// }
 			}
-
-			await Promise.all(processes.map(async proc => {
-				for (let i = stageIndex; i < stages.length; i++) {
-					const {signals, timeout: _timeout} = stages[i]
-					for (let j = 0; j < signals.length; j++) {
-						const signal = signals[j]
-						let error
-						try {
-							await kill(proc.pid, signal)
-						} catch (err) {
-							// ESRCH - process is not exist or killed before
-							// if (err.code !== 'ESRCH') {
-							error = err
-							// }
-						}
-						killResults.push({
-							signal,
-							process: proc,
-							error,
-						})
-						if (!error) {
-							if (stageIndex < minStageIndex) {
-								minStageIndex = stageIndex
-							}
-							if (_timeout > maxTimeout) {
-								maxTimeout = _timeout
-							}
-						}
-					}
-					if (maxTimeout > 0) {
-						break
-					}
-				}
-			}))
-
-			stageIndex = minStageIndex
-			timeout = maxTimeout
-		}
-
-		if (timeout) {
-			const waitResult = await waitProcessTree({
-				timeout,
-				checkInterval: 100,
-				predicate(processTree) {
-					processes = Object.values(processTree)
-						.filter((proc) => predicate(proc, processTree, stage, stageIndex, stages))
-					return processes.length === 0
-				},
+			killResults.push({
+				signal,
+				process: proc,
+				error,
 			})
-				.then(() => true)
-				.catch(() => false)
-
-			if (waitResult) {
-				return true
+			if (!error) {
+				hasNoError = true
 			}
 		}
 
-		stageIndex++
-
-		return false
+		return hasNoError
 	}
 
-	while (!(await iteration())) {
-		// empty
+	let error: Error = null
+
+	while (true) {
+		processes = await findInProcessTree((proc, processTree) => {
+			return predicate(proc, processTree)
+		})
+
+		if (processes.length === 0) {
+			return killResults
+		}
+
+		if (error) {
+			throw error
+		}
+
+		let countActive = 0
+		const now = Date.now()
+		for (let i = 0; i < processes.length; i++) {
+			const proc = processes[i]
+			const uniqueId = JSON.stringify(proc)
+			let state = states[uniqueId]
+			if (!state) {
+				states[uniqueId] = state = {
+					proc,
+					nextStageIndex: 0,
+					waitTime      : 0,
+					killPromise   : null,
+					error         : null,
+				}
+			}
+			if (state.killPromise || now < state.waitTime) {
+				countActive++
+			} else if (state.nextStageIndex < stages.length) {
+				const stage = stages[state.nextStageIndex]
+				state.nextStageIndex++
+				if (!stage.signals || stage.signals.length === 0) {
+					if (stage.timeout) {
+						state.waitTime = now + stage.timeout
+						countActive++
+					}
+				} else {
+					countActive++
+					state.killPromise = _killProc(proc, stage.signals)
+					state.killPromise
+						.then(hasNoError => {
+							if (hasNoError && stage.timeout) {
+								state.waitTime = Date.now() + stage.timeout
+							}
+						})
+						// eslint-disable-next-line no-loop-func
+						.catch(err => {
+							error ||= err
+						})
+						.finally(() => {
+							state.killPromise = null
+						})
+				}
+			}
+		}
+
+		if (countActive === 0) {
+			break
+		}
 	}
 
 	if (processes && processes.length === 0) {

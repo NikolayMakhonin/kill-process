@@ -29,12 +29,9 @@ function finalize() {
 			},
 			logFilePath,
 			createPredicate(state) {
-				return (proc, processTree, stage, stageIndex, stages) => {
+				return (proc, processTree) => {
 					if (proc.pid === state.ignorePid) {
 						return false
-					}
-					if (stage.signals[0] === 'SIGKILL' && process.platform !== 'win32') {
-						throw new Error('stage.signal === SIGKILL')
 					}
 					if (proc && typeof proc !== 'object') {
 						throw new Error('proc=' + proc)
@@ -42,20 +39,8 @@ function finalize() {
 					if (processTree && typeof processTree !== 'object') {
 						throw new Error('processTree=' + processTree)
 					}
-					if (stage && typeof stage !== 'object') {
-						throw new Error('stage=' + stage)
-					}
-					if (!Number.isFinite(stageIndex) || stageIndex < 0) {
-						throw new Error('stageIndex=' + stageIndex)
-					}
-					if (!Array.isArray(stages)) {
-						throw new Error('stages=' + stages)
-					}
 					if (processTree[proc.pid] !== proc) {
 						throw new Error('proc=' + JSON.stringify(proc))
-					}
-					if (stages[stageIndex] !== stage) {
-						throw new Error('stage=' + JSON.stringify(stage))
 					}
 					return proc.command.indexOf(state.command) >= 0
 				}

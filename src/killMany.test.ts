@@ -8,14 +8,12 @@ describe('killMany', function () {
 	this.timeout(30000)
 
 	it('empty stages', async function () {
-		let predicateCallsCount = 0
 		await killMany({
 			description: 'TestDescription',
 			stages: [
 				{}, {}, {},
 			],
 			predicate() {
-				predicateCallsCount++
 				return true
 			},
 		})
@@ -25,18 +23,12 @@ describe('killMany', function () {
 			.catch(err => {
 				assert.ok(/\bTestDescription\b/.test(err.message), err.message)
 			})
-
-		assert.strictEqual(predicateCallsCount, 0)
 	})
 
-	function checkPredicateArgs(proc, processTree, stage, stageIndex, stages) {
+	function checkPredicateArgs(proc, processTree) {
 		assert.ok(proc && typeof proc === 'object', 'proc=' + proc)
 		assert.ok(processTree && typeof processTree === 'object', 'processTree=' + processTree)
-		assert.ok(stage && typeof stage === 'object', 'stage=' + stage)
-		assert.ok(Number.isFinite(stageIndex) && stageIndex >= 0, 'stageIndex=' + stageIndex)
-		assert.ok(Array.isArray(stages), 'stages=' + stages)
 		assert.strictEqual(processTree[proc.pid], proc, 'proc=' + JSON.stringify(proc))
-		assert.strictEqual(stages[stageIndex], stage, 'stage=' + JSON.stringify(stage))
 	}
 
 	it('not exist', async function () {
@@ -46,8 +38,8 @@ describe('killMany', function () {
 			stages: [
 				{signals: ['SIGKILL']},
 			],
-			predicate(proc, processTree, stage, stageIndex, stages) {
-				checkPredicateArgs(proc, processTree, stage, stageIndex, stages)
+			predicate(proc, processTree) {
+				checkPredicateArgs(proc, processTree)
 				predicateCallsCount++
 				return false
 			},
@@ -85,12 +77,9 @@ describe('killMany', function () {
 				{signals: ['SIGINT'], timeout: 1000},
 				{signals: ['SIGKILL'], timeout: 1000},
 			],
-			predicate(proc, processTree, stage, stageIndex, stages) {
+			predicate(proc, processTree) {
 				predicateCallsCount++
-				if (process.platform !== 'win32') {
-					assert.ok(stage.signals[0] !== 'SIGKILL')
-				}
-				checkPredicateArgs(proc, processTree, stage, stageIndex, stages)
+				checkPredicateArgs(proc, processTree)
 				return proc.command.indexOf(command) >= 0
 			},
 		})
@@ -145,12 +134,9 @@ describe('killMany', function () {
 			stages: [
 				stage,
 			],
-			predicate(proc, processTree, _stage, stageIndex, stages) {
+			predicate(proc, processTree) {
 				predicateCallsCount++
-				assert.strictEqual(_stage, stage)
-				assert.strictEqual(_stage.signal, 0)
-				assert.strictEqual(_stage.timeout, 1000)
-				checkPredicateArgs(proc, processTree, _stage, stageIndex, stages)
+				checkPredicateArgs(proc, processTree)
 				return proc.command.indexOf(command) >= 0
 			},
 		})
@@ -163,6 +149,8 @@ describe('killMany', function () {
 
 		assert.ok(predicateCallsCount >= 4)
 
-		process.kill(proc.pid, 'SIGKILL')
+		if (proc) {
+			process.kill(proc.pid, 'SIGKILL')
+		}
 	})
 })
