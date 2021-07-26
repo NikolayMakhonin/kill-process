@@ -87,7 +87,7 @@ export async function killMany({
 					continue
 				}
 			}
-			return killResults
+			break
 		}
 
 		noProcessesTime = 0

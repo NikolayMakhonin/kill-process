@@ -2,14 +2,13 @@
 import {spawn} from 'child_process'
 import {findInProcessList, waitProcessList, waitProcessTree} from '@flemist/find-process'
 import assert from 'assert'
-import {cliId} from './cliId'
 import path from "path"
 import fs from "fs"
 
 describe('finalize', function () {
 	this.timeout(30000)
 
-	const _cliId = cliId + '-finalize-test'
+	const _cliId = 'finalize-test-app'
 
 	it('finalizeCurrentProcess', async function () {
 		let processes = await findInProcessList(proc => {

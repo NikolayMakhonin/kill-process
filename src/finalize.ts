@@ -39,7 +39,7 @@ export function finalizeProcesses<TState>({
 		stages.push({signals: ['SIGINT'], timeout: softKillDelay})
 		stages.push({signals: ['SIGTERM'], timeout: softKillDelay})
 	}
-	stages.push({signals: ['SIGKILL'], timeout: softKillDelay})
+	stages.push({signals: ['SIGKILL']})
 
 	if (outside) {
 		return killManyOutside({
@@ -91,7 +91,9 @@ export function finalizeCurrentProcess({
 		createFilter(state, _require) {
 			const {createProcessTreeFilter} = _require('@flemist/find-process')
 			return createProcessTreeFilter({
-				parentsPids: [state.pid],
+				parentsPids   : [state.pid],
+				includeParents: true,
+				includeChilds : true,
 			})
 		},
 		logFilePath,
