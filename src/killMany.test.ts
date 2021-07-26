@@ -48,7 +48,7 @@ describe('killMany', function () {
 			},
 		})
 
-		assert.strictEqual(filterCallsCount, 2)
+		assert.strictEqual(filterCallsCount, 1)
 		assert.deepStrictEqual(result, [])
 	})
 
@@ -83,7 +83,12 @@ describe('killMany', function () {
 			filter(processTree) {
 				filterCallsCount++
 				checkFilterArgs(processTree)
-				return Object.values(processTree).filter(proc => proc.command.indexOf(command) >= 0)
+				return Object.values(processTree).reduce((result, proc) => {
+					if (proc.command.indexOf(command) >= 0) {
+						result[proc.pid] = proc
+					}
+					return result
+				}, {})
 			},
 		})
 
@@ -140,7 +145,12 @@ describe('killMany', function () {
 			filter(processTree) {
 				filterCallsCount++
 				checkFilterArgs(processTree)
-				return Object.values(processTree).filter(proc => proc.command.indexOf(command) >= 0)
+				return Object.values(processTree).reduce((result, proc) => {
+					if (proc.command.indexOf(command) >= 0) {
+						result[proc.pid] = proc
+					}
+					return result
+				}, {})
 			},
 		})
 			.then(() => {

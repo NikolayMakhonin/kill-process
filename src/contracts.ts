@@ -19,7 +19,7 @@ export type TCreateKillProcessFilter<TState> = (state: TState) => TProcessTreeFi
 
 export type TCreateKillProcessFilterWithState<TState> = {
 	state: TState
-	createFilter: (state: TState) => TProcessTreeFilter
+	createFilter: (state: TState, _require: typeof require) => TProcessTreeFilter
 }
 
 export type TKillProcessArgsSerializable<TState> = Omit<TKillProcessArgs, 'filter'> & {

@@ -28,9 +28,9 @@ function finalize() {
 				command,
 			},
 			logFilePath,
-			createFilter(state) {
+			createFilter(state, _require) {
 				// eslint-disable-next-line global-require
-				const {createProcessTreeFilterByPredicate} = require('@flemist/find-process')
+				const {createProcessTreeFilterByPredicate} = _require('@flemist/find-process')
 				return createProcessTreeFilterByPredicate((proc, processTree) => {
 					if (proc.pid === state.ignorePid) {
 						return false

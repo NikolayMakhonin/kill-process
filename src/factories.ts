@@ -14,9 +14,9 @@ export function createKillOutsideFilter(
 				}
 			}),
 		},
-		createFilter(_state) {
+		createFilter(_state, _require) {
 			// eslint-disable-next-line global-require
-			const {createProcessTreeFilter} = require('@flemist/find-process')
+			const {createProcessTreeFilter} = _require('@flemist/find-process')
 			return createProcessTreeFilter(_state)
 		},
 	}

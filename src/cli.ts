@@ -9,6 +9,12 @@ import {createLogErrorToFile} from './logErrorToFile'
 import {cliId} from './cliId'
 import {TProcessTreeFilter, createProcessTreeFilterByPredicate} from '@flemist/find-process'
 
+// eslint-disable-next-line @typescript-eslint/ban-types
+const createFunction = (functionStr: string): Function => {
+	// eslint-disable-next-line no-new-func,no-eval
+	return Function(`return (${functionStr})`)
+}
+
 const logFilePath = (process.argv[2] || process.env.KILL_PROCESS_LOG_PATH || '').trim()
 const logError = createLogErrorToFile(logFilePath)
 async function readArgs(): Promise<TKillProcessArgsSerialized<any>> {
@@ -70,12 +76,11 @@ function parseAndValidateArgs(args: TKillProcessArgsSerialized<any>): TKillProce
 		}
 	})
 
-	// eslint-disable-next-line no-new-func
-	const createFilter = Function(`return (${args.createFilter})`)()
+	const createFilter = createFunction(args.createFilter)()
 	if (typeof createFilter !== 'function') {
 		throw Error('The createFilter is not a function')
 	}
-	const filter: TProcessTreeFilter = createFilter(args.state)
+	const filter: TProcessTreeFilter = createFilter(args.state, require)
 	if (typeof filter !== 'function') {
 		throw Error('The filter is not a function')
 	}

@@ -32,8 +32,8 @@ export async function killMany({
 
 	async function _killProc(proc: TProcessIdentity, signals: TSignal[]): Promise<boolean> {
 		try {
-			await kill(proc.pid, signals)
-			if (signals && signals.length === 0) {
+			if (signals && signals.length !== 0) {
+				await kill(proc.pid, signals)
 				killResults.push({
 					signals,
 					process: proc,
@@ -51,11 +51,11 @@ export async function killMany({
 	}
 
 	let error: Error = null
+	let prevCountActive: number = null
 
 	while (true) {
 		const processTree = filter(await psTree())
-
-		processes = Object.values(processTree)
+		processes = processTree && Object.values(processTree) || []
 
 		if (processes.length === 0) {
 			return killResults
@@ -63,6 +63,10 @@ export async function killMany({
 
 		if (error) {
 			throw error
+		}
+
+		if (prevCountActive === 0) {
+			break
 		}
 
 		let countActive = 0
@@ -110,9 +114,7 @@ export async function killMany({
 			}
 		}
 
-		if (countActive === 0) {
-			break
-		}
+		prevCountActive = countActive
 	}
 
 	if (processes && processes.length === 0) {
