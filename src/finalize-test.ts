@@ -23,8 +23,10 @@ function runChild(shell: boolean) {
 	proc.unref()
 }
 
+const runChildBeforeClose = (level === 0 || level === 2) && process.platform === 'win32'
+
 process.once('exit', () => {
-	if (level === 0 || level === 2) {
+	if (runChildBeforeClose) {
 		runChild(false)
 		runChild(true)
 	}
@@ -48,10 +50,12 @@ if (level === 0) {
 		// eslint-disable-next-line no-process-exit
 		process.exit(0)
 	}, 1500)
-} else if (level === 2) {
+} else if (runChildBeforeClose) {
 	// eslint-disable-next-line no-process-exit
 	process.exit(0)
-} else if (level <= 3) {
+}
+
+if (!runChildBeforeClose && level <= 3) {
 	runChild(true)
 	runChild(false)
 }
