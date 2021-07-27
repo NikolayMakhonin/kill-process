@@ -31,7 +31,12 @@ process.once('exit', () => {
 		runChild(true)
 	}
 
-	if (level === 0) {
+	// eslint-disable-next-line no-process-exit
+	process.exit(0)
+})
+
+if (level === 0) {
+	setTimeout(() => {
 		finalizeCurrentProcess({
 			description  : 'finalize-test',
 			softKillFirst: true,
@@ -39,17 +44,11 @@ process.once('exit', () => {
 			firstDelay   : 1000,
 			logFilePath,
 		})
-	}
-
-	// eslint-disable-next-line no-process-exit
-	process.exit(0)
-})
-
-if (level === 0) {
-	setTimeout(() => {
-		// eslint-disable-next-line no-process-exit
-		process.exit(0)
-	}, 1500)
+		setTimeout(() => {
+			// eslint-disable-next-line no-process-exit
+			// process.exit(0)
+		}, 1000)
+	}, 500)
 } else if (runChildBeforeClose) {
 	// eslint-disable-next-line no-process-exit
 	process.exit(0)
