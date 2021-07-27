@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import {psTree, TProcessIdentity, TProcessNode} from '@flemist/ps-cross-platform'
+import {psTree, TProcessIdentity, TProcessNode, TProcessTree} from '@flemist/ps-cross-platform'
 import {TKillProcessArgs, TKillResult, TSignal} from './contracts'
 import {kill} from './kill'
 
@@ -53,7 +53,7 @@ export async function killMany({
 
 	let error: Error = null
 	let prevCountActive: number = null
-	let firstFilter = true
+	let filteredProcessTree: TProcessTree
 	let prevProcesses = []
 	let noProcessesTime = 0
 
@@ -61,24 +61,24 @@ export async function killMany({
 		const processTree = await psTree(prevProcesses)
 		prevProcesses = Object.values(processTree)
 
-		let filteredProcessTree = filter(processTree, firstFilter)
-		// firstFilter = false
+		filteredProcessTree = filter(processTree, null)
+
 		if (processes) {
-			processes.forEach(proc => {
+			for (let i = 0; i < processes.length; i++) {
+				const proc = processes[i]
 				if (!filteredProcessTree[proc.pid]) {
 					const foundProc = processTree[proc.pid]
 					if (!foundProc.closed) {
 						filteredProcessTree[proc.pid] = proc
 					}
 				}
-			})
+			}
 		}
-		// filteredProcessTree = processTreeFilterOpened(filteredProcessTree, firstFilter)
-		processes = filteredProcessTree && Object.values(filteredProcessTree) || []
 
-		const _processes = processes.filter(o => !o.closed)
+		processes = (filteredProcessTree && Object.values(filteredProcessTree) || [])
+			.filter(o => !o.closed)
 
-		if (_processes.length === 0) {
+		if (processes.length === 0) {
 			if (waitNewProcessesTime) {
 				if (!noProcessesTime) {
 					noProcessesTime = Date.now()
@@ -102,8 +102,8 @@ export async function killMany({
 
 		let countActive = 0
 		const now = Date.now()
-		for (let i = 0; i < _processes.length; i++) {
-			const proc = _processes[i]
+		for (let i = 0; i < processes.length; i++) {
+			const proc = processes[i]
 			const uniqueId = createProcUniqueId(proc)
 			let state = states[uniqueId]
 			if (!state) {
@@ -148,20 +148,8 @@ export async function killMany({
 		prevCountActive = countActive
 	}
 
-	if (processes) {
-		const _processes = processes.filter(o => !o.closed)
-		if (_processes.length === 0) {
-			// throw new Error('Processes killed'
-			// 	+ (description ? ': ' + description : '')
-			// 	+ '\r\nkillOperations: ' + JSON.stringify(killResults.map(o => {
-			// 		if (o.error) {
-			// 			o.error = (o.error.stack || o.error.message || o.error) as any
-			// 		}
-			// 		return o.process.pid + ' ' + o.process.command
-			// 	}), null, 4)
-			// 	+ '\r\nprocesses: ' + (processes && JSON.stringify(prevProcesses, null, 4)))
-			return killResults
-		}
+	if (processes && processes.length === 0) {
+		return killResults
 	}
 
 	if (!processes) {

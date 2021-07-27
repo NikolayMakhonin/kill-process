@@ -86,9 +86,9 @@ function parseAndValidateArgs(args: TKillProcessArgsSerialized<any>): TKillProce
 	return {
 		...args,
 		// eslint-disable-next-line func-name-matching
-		filter: function _filter(processTree, firstFilter) {
-			let result = excludeCurrentProcessFilter(processTree, firstFilter)
-			result = filter(result, firstFilter)
+		filter: function _filter(processTree, prevProcessTree) {
+			let result = excludeCurrentProcessFilter(processTree, prevProcessTree)
+			result = filter(result, prevProcessTree)
 			// if (result && stage.signals[0] === 'SIGINT') {
 			// 	logError('stage.signal === SIGINT\r\n' + JSON.stringify(proc, null, 4))
 			// }
