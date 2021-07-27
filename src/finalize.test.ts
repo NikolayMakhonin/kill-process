@@ -6,7 +6,7 @@ import path from "path"
 import fs from "fs"
 
 describe('finalize', function () {
-	this.timeout(30000)
+	this.timeout(60000)
 
 	const _cliId = 'finalize-test-app'
 
@@ -35,6 +35,8 @@ describe('finalize', function () {
 
 			console.log('App pid: ' + proc.pid)
 
+			let timeStart = Date.now()
+
 			processes = await waitProcessList({
 				timeout: 1000,
 				checkInterval: 100,
@@ -46,6 +48,9 @@ describe('finalize', function () {
 			processes = processes.filter(o => o.command.indexOf(_cliId) >= 0)
 			assert.strictEqual(processes.length, 1)
 			assert.ok(processes[0].command.indexOf('finalize-test.js 0 ') >= 0)
+
+			console.log('Wait app open: ' + (Date.now() - timeStart))
+			timeStart = Date.now()
 
 			processes = await waitProcessList({
 				timeout: 4000,
@@ -59,14 +64,20 @@ describe('finalize', function () {
 			processes = processes.filter(o => o.command.indexOf(_cliId) >= 0)
 			assert.ok(processes.length >= 2)
 
+			console.log('Wait app close: ' + (Date.now() - timeStart))
+			timeStart = Date.now()
+
 			await waitProcessList({
-				timeout: 10000,
+				timeout: 20000,
 				checkInterval: 100,
 				description: 'Wait app closer',
 				predicate(processList) {
 					return processList.every(o => !/dist[\\/]cli.js/.test(o.command))
 				}
 			})
+
+			console.log('Wait app closer: ' + (Date.now() - timeStart))
+			timeStart = Date.now()
 
 			try {
 				await waitProcessTree({
@@ -78,10 +89,16 @@ describe('finalize', function () {
 						return processes.length === 0
 					}
 				})
+
+				console.log('Wait app finalize: ' + (Date.now() - timeStart))
+				timeStart = Date.now()
 			} catch (err) {
 				console.error(JSON.stringify(processes, null, 4))
 				throw err
 			}
+		} catch (err) {
+			console.log(err)
+			throw err
 		} finally {
 			let hasError
 			if (fs.existsSync(logFilePath)) {

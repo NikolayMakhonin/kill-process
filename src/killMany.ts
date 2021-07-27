@@ -62,7 +62,7 @@ export async function killMany({
 		prevProcesses = Object.values(processTree)
 
 		let filteredProcessTree = filter(processTree, firstFilter)
-		firstFilter = false
+		// firstFilter = false
 		if (processes) {
 			processes.forEach(proc => {
 				if (!filteredProcessTree[proc.pid]) {
@@ -151,6 +151,15 @@ export async function killMany({
 	if (processes) {
 		const _processes = processes.filter(o => !o.closed)
 		if (_processes.length === 0) {
+			// throw new Error('Processes killed'
+			// 	+ (description ? ': ' + description : '')
+			// 	+ '\r\nkillOperations: ' + JSON.stringify(killResults.map(o => {
+			// 		if (o.error) {
+			// 			o.error = (o.error.stack || o.error.message || o.error) as any
+			// 		}
+			// 		return o.process.pid + ' ' + o.process.command
+			// 	}), null, 4)
+			// 	+ '\r\nprocesses: ' + (processes && JSON.stringify(prevProcesses, null, 4)))
 			return killResults
 		}
 	}

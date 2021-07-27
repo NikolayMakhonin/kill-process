@@ -3,7 +3,7 @@ import {spawn} from 'child_process'
 
 setTimeout(() => {
 	// to prevent auto close process
-}, 30000)
+}, 60000)
 
 const level = parseInt(process.argv[2], 10)
 const cliId = process.argv[3]
@@ -24,7 +24,7 @@ function runChild(shell: boolean) {
 }
 
 process.once('exit', () => {
-	if (level === 0 || level === 2) {
+	if (level === 0) { // || level === 2) {
 		runChild(false)
 		runChild(true)
 	}
@@ -48,9 +48,9 @@ if (level === 0) {
 		// eslint-disable-next-line no-process-exit
 		process.exit(0)
 	}, 1500)
-} else if (level === 2) {
-	// eslint-disable-next-line no-process-exit
-	process.exit(0)
+// } else if (level === 2) {
+// 	// eslint-disable-next-line no-process-exit
+// 	process.exit(0)
 } else if (level <= 3) {
 	runChild(true)
 	runChild(false)

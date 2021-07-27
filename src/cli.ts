@@ -30,7 +30,10 @@ async function readArgs(): Promise<TKillProcessArgsSerialized<any>> {
 }
 
 const excludeCurrentProcessFilter: TProcessTreeFilter = createProcessTreeFilterByPredicate((proc) => {
-	if (proc.pid === process.pid || proc.command.indexOf(cliId) >= 0) {
+	if (proc.pid === process.pid
+		|| proc.parentIds.indexOf(process.pid) >= 0
+		|| proc.command.indexOf(cliId) >= 0
+	) {
 		return false
 	}
 	return true
