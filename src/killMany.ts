@@ -2,6 +2,7 @@
 import {psTree, TProcessIdentity, TProcessNode, TProcessTree} from '@flemist/ps-cross-platform'
 import {TKillProcessArgs, TKillResult, TSignal} from './contracts'
 import {kill} from './kill'
+import {processEquals} from '@flemist/find-process'
 
 /** Return kill operations */
 export async function killMany({
@@ -60,8 +61,21 @@ export async function killMany({
 	while (true) {
 		const processTree = await psTree(prevProcesses)
 		prevProcesses = Object.values(processTree)
+		if (filteredProcessTree) {
+			const prevFilteredPids = Object.keys(filteredProcessTree)
+			for (let i = 0; i < prevFilteredPids.length; i++) {
+				const pid = Object.keys(filteredProcessTree)[i]
+				const prevProc = filteredProcessTree[pid]
+				const foundProc = processTree[pid]
+				if (processEquals(prevProc, foundProc)) {
+					filteredProcessTree[pid] = foundProc
+				} else {
+					prevProc.closed = true
+				}
+			}
+		}
 
-		filteredProcessTree = filter(processTree, null)
+		filteredProcessTree = filter(processTree, filteredProcessTree)
 
 		if (processes) {
 			for (let i = 0; i < processes.length; i++) {
